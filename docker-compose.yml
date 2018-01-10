@@ -1,9 +1,9 @@
 version: "3.2"
 
 services:
-    database-postgres:
+    database:
       image: postgres:latest
-      expose:
+      ports:
         - "5402:5432"
       environment:
         POSTGRES_PASSWORD: insecure
@@ -11,9 +11,9 @@ services:
     web:
       build: .
       ports:
-        - "80:80"
+        - "8129:80"
       links:
-        - database-postgres:database
+        - database:database
         
       environment:
         SYMFONY__CLEANSTREET__DATABASE_HOST: database

@@ -1,14 +1,14 @@
 parameters:
-    database_host: database
-    database_port: 5432
-    database_name: prod_heelenschoon
-    database_user: prod_heelenschoon
-    database_password: insecure
-    mailer_transport: smtp
-    mailer_host: 127.0.0.1
-    mailer_user: null
-    mailer_password: null
-    secret: insecure
+    database_host: '%cleanstreet.database.host%'
+    database_port: '%cleanstreet.database.port%'
+    database_name: '%cleanstreet.database.name%'
+    database_user: '%cleanstreet.database.user%'
+    database_password: '%cleanstreet.database.password%'
+    mailer_transport: '%cleanstreet.mailer.transport%'
+    mailer_host: '%cleanstreet.mailer.host%'
+    mailer_user: '%cleanstreet.mailer.user%'
+    mailer_password: '%cleanstreet.mailer.password%'
+    secret: '%cleanstreet.secret%'
     app_phone_number: 'insecure'
     app_messagebird_key: insecure
-    piwik_site_id: 9
+    piwik_site_id: '%cleanstreet.piwik.site.id%'
