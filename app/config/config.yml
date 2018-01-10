@@ -1,0 +1,135 @@
+imports:
+    - { resource: parameters.yml }
+    - { resource: security.yml }
+    - { resource: services.yml }
+
+# Put parameters here that don't need to change on each machine where the app is deployed
+# http://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
+parameters:
+    locale: nl
+
+framework:
+    #esi: ~
+    translator: { fallbacks: ['%locale%'] }
+    secret: '%secret%'
+    router:
+        resource: '%kernel.root_dir%/config/routing.yml'
+        strict_requirements: ~
+    form: ~
+    csrf_protection: ~
+    validation: { enable_annotations: true }
+    serializer: { enable_annotations: true }
+    templating:
+        engines: ['twig']
+    default_locale: '%locale%'
+    trusted_hosts: ~
+    trusted_proxies: ~
+    session:
+        # http://symfony.com/doc/current/reference/configuration/framework.html#handler-id
+        handler_id:  session.handler.native_file
+        save_path:   "%kernel.root_dir%/../var/sessions/%kernel.environment%"
+    fragments: ~
+    http_method_override: true
+    assets:
+        version: '2'
+        version_format: '%%s?v=%%s'
+    php_errors:
+        log: true
+
+# Twig Configuration
+twig:
+    debug: '%kernel.debug%'
+    strict_variables: '%kernel.debug%'
+    form_themes:
+        #- 'bootstrap_3_layout.html.twig'
+        - 'HeelEnSchoonBundle::forms.html.twig'
+    globals:
+        app_dienst_service: '@heel_en_schoon.service.dienst'
+
+# Doctrine Configuration
+doctrine:
+    dbal:
+        driver: pdo_pgsql
+        host: '%database_host%'
+        port: '%database_port%'
+        dbname: '%database_name%'
+        user: '%database_user%'
+        password: '%database_password%'
+        charset: UTF8
+        # if using pdo_sqlite as your database driver:
+        #   1. add the path in parameters.yml
+        #     e.g. database_path: "%kernel.root_dir%/../var/data/data.sqlite"
+        #   2. Uncomment database_path in parameters.yml.dist
+        #   3. Uncomment next line:
+        #path: '%database_path%'
+        types:
+            geography: 'Jsor\Doctrine\PostGIS\Types\GeographyType'
+            geometry: 'Jsor\Doctrine\PostGIS\Types\GeometryType'
+            raster: 'Jsor\Doctrine\PostGIS\Types\RasterType'
+        schema_filter: ~^(?!legacy_)~
+    orm:
+        auto_generate_proxy_classes: '%kernel.debug%'
+        naming_strategy: doctrine.orm.naming_strategy.underscore
+        auto_mapping: true
+        dql:
+            string_functions:
+                ST_DWithin: 'Jsor\Doctrine\PostGIS\Functions\ST_DWithin'
+                ST_GeographyFromText: 'Jsor\Doctrine\PostGIS\Functions\ST_GeographyFromText'
+doctrine_migrations:
+    dir_name: "%kernel.root_dir%/DoctrineMigrations"
+    namespace: Application\Migrations
+    table_name: migration_versions
+    name: Application Migrations
+
+# Swiftmailer Configuration
+swiftmailer:
+    transport: '%mailer_transport%'
+    host: '%mailer_host%'
+    username: '%mailer_user%'
+    password: '%mailer_password%'
+    spool: { type: memory }
+
+# Nelmio API doc
+nelmio_api_doc: ~
+
+# Sensio Framework Extra
+sensio_framework_extra:
+    request:
+        converters: true
+        auto_convert: false
+
+# Vich uploader
+vich_uploader:
+    db_driver: orm
+    mappings:
+        foto_image:
+            uri_prefix: /media
+            upload_destination: '%kernel.root_dir%/../web/media'
+            inject_on_load: false
+            delete_on_update: true
+            delete_on_remove: true
+            namer: vich_uploader.namer_uniqid
+            
+# Liip
+liip_imagine:
+    resolvers:
+        default:
+            web_path: ~
+    filter_sets:
+        cache: ~
+        thumbnail1000:
+            filters:
+                auto_rotate: ~
+                thumbnail: { size: [1000, 1000], mode: 'inset' }
+        thumbnail480:
+            filters:
+                auto_rotate: ~
+                thumbnail: { size: [480, 480], mode: 'outbound' }
+        thumbnail240:
+            filters:
+                auto_rotate: ~
+                thumbnail: { size: [240, 240], mode: 'outbound' }
+        thumbnail120:
+            filters:
+                auto_rotate: ~
+                thumbnail: { size: [120, 120], mode: 'outbound' }

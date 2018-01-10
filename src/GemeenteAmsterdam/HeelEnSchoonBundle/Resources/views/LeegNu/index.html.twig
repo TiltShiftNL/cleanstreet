@@ -1,0 +1,117 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>leeg.nu</title>
+        <meta name="viewport" content="width=device-width">
+        <link href="/assets/css/leegnu.min.css" type="text/css" rel="stylesheet">
+    </head>
+    <body>
+        <section class="leegnu">
+            <div class="leegnu-wrapper">
+                <article class="leegnu-text">
+                    <h1><a href="/">leeg.nu</a></h1>
+                </article>
+{% if app_dienst_service.hasActiveDienst == false %}
+                <article class="leegnu-text">
+                    <p>Op dit moment zijn we niet aanwezig.</p>
+                    <p>Wij legen bakken dagelijks van 10:00 tot 22:00 uur.</p>
+                    <p>Ook in het weekend.</p>
+                </article>
+{% elseif form is defined %}
+                <article class="leegnu-text">
+                    <p>Vul hieronder uw baknummer in, dan komen we deze legen.</p>
+                </article>
+                {{ form_start(form, {'attr': {'class': 'enter-number'}}) }}
+                {{ form_errors(form.ondernemersBak) }}
+                <h2 class="leegnu-legend"><span>baknummer</span></h2>
+                <fieldset class="leegnu-baknummer">
+                    {{ form_widget(form.ondernemersBak, {'type': 'tel', 'attr': {'class': 'input', 'inputmode': 'numeric', 'pattern': '[0-9]*', 'required': true, 'autocomplete': 'off', 'size': 4, 'minlength': 4, 'maxlength': 4}}) }}
+                    <div class="leegnu-line-container">
+                        <span class="leegnu-line"></span>
+                        <span class="leegnu-line"></span>
+                        <span class="leegnu-line"></span>
+                        <span class="leegnu-line"></span>
+                    </div>
+                </fieldset>
+    {% for bak in bakken %}
+                <div class="bak" id="bak-{{ bak.kenmerk }}">
+                    <b>{{ bak.onderneming.naam }}</b> {{ bak.onderneming.straat }} {{ bak.onderneming.huisnummer }}
+                </div>
+        {% if app_dienst_service.getDienst(bak.onderneming.gebied.id) is empty %}
+                <div class="niet-aanwezig" id="niet-aanwezig-{{ bak.kenmerk }}">
+                    Ons team is nu niet aanwezig in dit gebied.
+                </div>
+        {% endif %}
+    {% endfor %}
+                <button type="submit" class="button">melden</button>
+                {{ form_end(form) }}
+{% elseif succes is defined %}
+                <article class="leegnu-text">
+                    <p>Bedankt voor het doorgeven!</p>
+                    <p>Wij komen zo spoedig mogelijk.</p>
+                </article>
+{% endif %}
+                <p class="leegnu-poweredby">
+                    leeg.nu is onderdeel van
+                    <a href="https://cleanstreet.amsterdam.nl/about">
+                        <img src="/img/clean-street-logo-black.svg" alt="clean street">
+                    </a>
+                </p>
+            </div>
+        </section>
+{% if form is defined %}
+        <script>
+            var frm = document.querySelector('form');
+            var inp = document.querySelector('.input');
+            var bak = false;
+            var aanwezig = false;
+            if (inp) {
+                inp.addEventListener('focus', function() {
+                    var errors = document.querySelector('.errors');
+                    if (errors) {
+                        errors.classList.add('irrelevant');
+                    }
+                });
+                inp.addEventListener('input', function() {
+                    if (this.checkValidity()) {
+                        bak = document.getElementById('bak-' + this.value);
+                        if (bak) {
+                            frm.classList.add('is-valid');
+                            bak.classList.add('is-active');
+                        }
+                        aanwezig = document.getElementById('niet-aanwezig-' + this.value);
+                        if (aanwezig) {
+                            frm.classList.remove('is-valid');
+                            aanwezig.classList.add('is-active');
+                        }
+                    } else {
+                        frm.classList.remove('is-valid');
+                        if (bak) {
+                            bak.classList.remove('is-active');
+                        }
+                        if (aanwezig) {
+                            aanwezig.classList.remove('is-active');
+                        }
+                    }
+                });
+            }
+            setTimeout(function() {
+                inp.setAttribute('placeholder', '1');
+                setTimeout(function() {
+                    inp.setAttribute('placeholder', '12');
+                    setTimeout(function() {
+                        inp.setAttribute('placeholder', '123');
+                        setTimeout(function() {
+                            inp.setAttribute('placeholder', '1234');
+                            setTimeout(function() {
+                                inp.setAttribute('placeholder', '');
+                            }, 700);
+                        }, 280);
+                    }, 220);
+                }, 250);
+            }, 500);
+        </script>
+{% endif %}
+    </body>
+</html>

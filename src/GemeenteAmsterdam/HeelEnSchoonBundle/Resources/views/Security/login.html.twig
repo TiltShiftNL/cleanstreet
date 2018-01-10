@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="nl">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width">
+        <title>clean street</title>
+        <link rel="stylesheet" href="{{ asset('/assets/css/app.css') }}">
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    </head>
+    <body>
+        <div class="view" id="main"></div>
+
+        <section class="section" id="section-main">
+            <form action="{{ path('gemeenteamsterdam_heelenschoon_security_login') }}" method="post">
+                <header class="section-header">
+                    <h1>clean street</h1>
+                    <button type="submit">Login</button>
+                </header>
+{% if error %}
+                <div class="field">
+                    <div class="error">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+                </div>
+{% endif %}
+                <div class="field-special">
+                    <label class="wide fixed">
+                        {% include 'HeelEnSchoonBundle:_icons:user.svg.twig' %}
+                        <span>Gebruiker</span>
+                        <select name="_username">
+{% for medewerker in medewerkers %}
+                            <option value="{{ medewerker.username }}" {{ last_username == medewerker.id ? 'selected' }}>{{ medewerker.naam }}</option>
+{% endfor %}
+                        </select>
+                    </label>
+                </div>
+                <div class="field-special">
+                    <label class="wide fixed">
+                        {% include 'HeelEnSchoonBundle:_icons:password.svg.twig' %}
+                        <span>Wachtwoord</span>
+                        <input type="password" id="password" name="_password" value="" placeholder="Vul hier je wachtwoord in">
+                    </label>
+                </div>
+                <input type="hidden" name="_target_path" value="/tickets">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+            </form>
+        </section>
+
+        <script src="{{ asset('/assets/js/app.js') }}"></script>
+
+        {# Preload for next screens, might be better with rel="preload" once that's better supported #}
+        <link rel="stylesheet" href="/assets/css/leaflet.css">
+        <script src="/assets/js/leaflet.js"></script>
+
+    </body>
+</html>

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="nl" data-decorator="init-app">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width">
+        <title>clean street</title>
+        <link rel="stylesheet" href="{{ asset('/assets/css/app.css') }}">
+        <link rel="stylesheet" href="/assets/css/leaflet.css">
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    </head>
+    <body>
+
+        <div class="view" id="ondernemers"></div>
+        <div class="view" id="ondernemer-aanmaken"></div>
+        <div class="view" id="diensten"></div>
+        <div class="view" id="dienst-aanmaken"></div>
+        <div class="view" id="omschrijving-toevoegen"></div>
+        <div class="view" id="ticket-aanmaken"></div>
+        <div class="view" id="foto-toevoegen"></div>
+        <div class="view" id="bak-toevoegen"></div>
+        <div class="view" id="bewerken"></div>
+        <div class="view" id="bak-legen"></div>
+        <div class="view" id="selecteer-ondernemer"></div>
+        <div class="view" id="selecteer-dienst"></div>
+        <div class="view" id="main"></div>
+
+        {% block header %}{% endblock %}
+
+        <section class="section" id="section-main">
+            {% block main %}{% endblock %}
+        </section>
+
+        {% block views %}{% endblock %}
+
+        <script src="/assets/js/leaflet.js"></script>
+        <script src="{{ asset('/assets/js/app.js') }}"></script>
+    
+</html>

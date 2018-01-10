@@ -1,0 +1,73 @@
+server {
+  server_name leeg.nu;
+  rewrite ^ https://www.leeg.nu$request_uri? permanent;
+}
+
+server {
+  listen 80;
+  listen [::]:80;
+  server_name www.leeg.nu;
+
+  root /srv/web/heelenschoon/web;
+  index index.html;
+
+  location / {
+    try_files $uri /app_prod.php$is_args$args;
+  }
+
+  location ~ ^/app_prod\.php(/|$) {
+    fastcgi_pass unix:/run/php/php7.0-fpm.sock;
+    fastcgi_split_path_info ^(.+\.php)(/.*)$;
+    include fastcgi_params;
+    fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+    fastcgi_param DOCUMENT_ROOT $realpath_root;
+    internal;
+  }
+
+  location ~* \.(?:jpg|jpeg|gif|png|ico|cur|gz|svg|svgz|mp4|ogg|ogv|webm|htc)$ {
+    expires 1y;
+    add_header Cache-Control "public";
+  }
+
+  location ~* \.(?:css|js)$ {
+    expires 1y;
+    add_header Cache-Control "public";
+  }
+}
+
+server {
+  server_name heelenschoon.datalabamsterdam.nl;
+  rewrite ^ https://cleanstreet.amsterdam.nl$request_uri? permanent;
+}
+
+server {
+  listen 80 default;
+  listen [::]:80 default;
+  server_name cleanstreet.amsterdam.nl;
+
+  root /srv/web/heelenschoon/web;
+  index index.html;
+
+  location / {
+    try_files $uri /app_prod.php$is_args$args;
+  }
+
+  location ~ ^/app_prod\.php(/|$) {
+    fastcgi_pass unix:/run/php/php7.0-fpm.sock;
+    fastcgi_split_path_info ^(.+\.php)(/.*)$;
+    include fastcgi_params;
+    fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+    fastcgi_param DOCUMENT_ROOT $realpath_root;
+    internal;
+  }
+
+  location ~* \.(?:jpg|jpeg|gif|png|ico|cur|gz|svg|svgz|mp4|ogg|ogv|webm|htc)$ {
+    expires 1y;
+    add_header Cache-Control "public";
+  }
+
+  location ~* \.(?:css|js)$ {
+    expires 1y;
+    add_header Cache-Control "public";
+  }
+}

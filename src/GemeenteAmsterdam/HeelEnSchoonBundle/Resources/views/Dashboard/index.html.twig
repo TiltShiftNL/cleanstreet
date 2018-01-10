@@ -1,0 +1,170 @@
+{% extends 'HeelEnSchoonBundle:Dashboard:_base.html.twig' %}
+
+{% block body %}
+    <body>
+
+        <header class="banner">
+            <div class="banner-wrapper">
+                <div class="banner-container">
+                    <a href="{{ path('gemeenteamsterdam_heelenschoon_dashboard_index') }}" class="banner-cleanstreet">
+                        <img src="/img/clean-street-logo.svg" alt="clean street">
+                    </a>
+                    <img src="/img/adam-logo.svg" class="banner-amsterdam" alt="gemeente amsterdam">
+                </div>
+            </div>
+        </header>
+
+        <nav class="main-nav" id="sticky-nav">
+            <div class="main-nav-wrapper">
+                <div class="main-nav-container">
+                    {% if filter.datumAangemaakt is defined %}
+                        <h1 class="dashboard-day">
+                        <a href="?datumAangemaakt={{ filter.datumAangemaakt|date_modify('-1 day')|date('Y-m-d') }}" class="dashboard-arrow prev">&#9668;</a>
+                        <span class="dashboard-datepicker" id="pikaday">{{ filter.datumAangemaakt|localizeddate('none', 'none', 'nl', false, 'EEEE d MMMM YYYY') }}</span>
+                        {% if filter.datumAangemaakt|date('Y-m-d') < 'now'|date('Y-m-d') %}
+                            <a href="?datumAangemaakt={{ filter.datumAangemaakt|date_modify('+1 day')|date('Y-m-d') }}" class="dashboard-arrow">&#9658;</a>
+                        {% endif %}
+                        </h1>
+                    {% endif %}
+                </div>
+            </div>
+        </nav>
+
+        <section class="dashboard">
+            <div class="dashboard-wrapper">
+                <nav class="dashboard-filters">
+                    <div class="dashboard-filters-container group">
+                        <a href="#" id="filter-alles" class="dashboard-filter active">alles <span class="dashboard-filter-count">({{ tickets|length }})</span></a>
+                        <a href="#" id="filter-open" class="dashboard-filter">open <span class="dashboard-filter-count">(0)</span></a>
+                        <a href="#" id="filter-gesloten" class="dashboard-filter">gesloten <span class="dashboard-filter-count">(0)</span></a>
+                        <a href="#" id="filter-opgelost" class="dashboard-filter">opgelost <span class="dashboard-filter-count">(0)</span></a>
+                        <a href="#" id="filter-niet-opgelost" class="dashboard-filter">niet opgelost <span class="dashboard-filter-count">(0)</span></a>
+                        <a href="#" id="filter-onbekend" class="dashboard-filter">onbekend <span class="dashboard-filter-count">(0)</span></a>
+                        <a href="#" id="filter-geleegd" class="dashboard-filter">geleegd <span class="dashboard-filter-count">(0)</span></a>
+                    </div>
+                </nav>
+            </div>
+            <div class="dashboard-wrapper">
+
+                {% if tickets is empty %}
+                    <div class="no-tickets">
+                        <div class="no-tickets-container">
+                            <h1 class="no-tickets-title">geen tickets deze dag</h1>
+                            <p class="no-tickets-text">probeer een andere datum</p>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% for ticket in tickets %}
+
+                    {% set status %}{% if ticket.status is defined and ticket.status %}gesloten{% else %}open{% endif %}{% endset %}
+                    {% set oplossing %}{% if ticket.oplossing is defined %}{{ ticket.oplossing|replace({' ': '-'}) }}{% else %}{% endif %}{% endset %}
+                    {% set cardtype %}{% if ticket.fotos[0] is defined and ticket.fotos[0] is not empty %}photo{% else %}text-only{% endif %}{% endset %}
+                    {% set cardmessage %}{% include 'HeelEnSchoonBundle:Dashboard:_cardmessage.html.twig' %}{% endset %}
+
+                    <a href="{{ path('gemeenteamsterdam_heelenschoon_tickets_detail', {'ticketId': ticket.id, 'gebiedId': ticket.gebied.id, 'return': 'dashboard', 'datum': filter.datumAangemaakt|date('Y-m-d')}) }}" class="dashboard-item" data-status="{{ status }}" data-solution="{{ oplossing }}">
+                        <div class="dashboard-card{% if cardtype =='text-only' %} text-only{% endif %}{% if ticket.oplossing == 'geleegd' %} bak-geleegd{% endif %}" style="position: relative;{% if ticket.oplossing == 'geleegd' %}background-image:url(/assets/img/pattern-single.svg){% endif %}">
+                            {% if cardtype == 'text-only' %}
+                                <div class="dashboard-cardmessage">
+                                    {{ cardmessage }}
+                                </div>
+                            {% endif %}
+                            <span class="dashboard-time">{{ ticket.datumTijdAangemaakt|date('H:i') }}</span>
+                            {% if cardtype == 'photo' %}
+                                <img src="{{ asset('/assets/img/foto-placeholder.png') }}" data-src="{{ vich_uploader_asset(ticket.fotos[0], 'imageFile')|imagine_filter('thumbnail480') }}" class="dashboard-photo">
+                            {% else %}
+                                <img src="{{ asset('/assets/img/foto-placeholder.png') }}" data-src="{{ asset('/assets/img/foto-placeholder.png') }}" class="dashboard-photo">
+                            {% endif %}
+                            <p class="dashboard-card-meta">
+                                {% if ticket.onderneming %}
+                                    <b>{{ ticket.onderneming.naam }}</b> - {{ ticket.onderneming.straat }} {{ ticket.onderneming.huisnummer }}
+                                {% elseif ticket.fotos|default({})|length > 0 and ticket.straat %}
+                                    {{ ticket.straat }}
+                                {% elseif ticket.bron == 'leegnu-melding' %}
+                                    Leeg.nu verzoek
+                                {% elseif ticket.bron == 'cleanstreet-contact' %}
+                                    Contactformulier
+                                {% elseif ticket.tekst %}
+                                    {{ ticket.tekst }}
+                                {% else %}
+                                    geen omschrijving
+                                {% endif %}
+                            </p>
+                        </div>
+                    </a>
+                {% endfor %}
+
+            </div>
+        </section>
+
+        <footer class="main-footer">
+            <div class="wrapper">
+                <p>Clean street is een initiatief van de Gemeente Amsterdam</p>
+            </div>
+        </footer>
+
+        <script src="/assets/js/jquery.sticky.js"></script>
+        <script src="/assets/js/jail.min.js"></script>
+        <script src="/assets/js/moment.min.js"></script>
+        <script src="/assets/js/pikaday/pikaday.js"></script>
+
+        <script>
+        $( document ).ready(function() {
+
+            // Lazy load photos
+            $('.dashboard-photo').jail({effect: 'fadeIn', speed: 200});
+
+            // Sticky nav
+            $("#sticky-nav").sticky({zIndex:2, responsiveWidth:false});
+
+            // Counts per filter
+            $("#filter-open .dashboard-filter-count").html("(" + $(".dashboard-item[data-status=open]").length + ")");
+            $("#filter-gesloten .dashboard-filter-count").html("(" + $(".dashboard-item[data-status=gesloten]").length + ")");
+            $("#filter-opgelost .dashboard-filter-count").html("(" + $(".dashboard-item[data-solution=opgelost]").length + ")");
+            $("#filter-niet-opgelost .dashboard-filter-count").html("(" + $(".dashboard-item[data-solution='niet-opgelost']").length + ")");
+            $("#filter-onbekend .dashboard-filter-count").html("(" + $(".dashboard-item[data-solution=onbekend]").length + ")");
+            $("#filter-geleegd .dashboard-filter-count").html("(" + $(".dashboard-item[data-solution=geleegd]").length + ")");
+
+            // Click filter
+            $(".dashboard-filter").click(function(e) {
+                e.preventDefault();
+                var filter = $(this).attr("id").substr("filter-".length);
+                localStorage.setItem("filter", filter);
+                $(".dashboard-filter").removeClass("active");
+                $(this).addClass("active");
+                $(".dashboard-item").fadeOut(200);
+                setTimeout(function () {
+                    switch (filter) {
+                        case "open":
+                        case "gesloten":
+                            $(".dashboard-item[data-status=" + filter + "]").fadeIn(200);
+                            break;
+                        case "opgelost":
+                        case "niet-opgelost":
+                        case "onbekend":
+                        case "geleegd":
+                            $(".dashboard-item[data-solution=" + filter + "]").fadeIn(200);
+                            break;
+                        case "alles":
+                        default:
+                            $(".dashboard-item").fadeIn(200);
+                    }
+                }, 200);
+            });
+
+            var filter = localStorage.getItem("filter") || "alles";
+            $("#filter-" + filter).click();
+
+            // Pikaday date picker
+            var headerdate = new Pikaday({
+                field: document.getElementById('pikaday'),
+                format: 'YYYY-MM-DD',
+                theme: 'cleanstreet-theme',
+                onSelect: function(date) {
+                    window.location = '?datumAangemaakt=' + headerdate.toString();
+                }
+            });
+
+        });
+        </script>
+{% endblock %}

@@ -1,0 +1,34 @@
+services:
+    heel_en_schoon.eventlistener.leegnulistener:
+        class: 'GemeenteAmsterdam\HeelEnSchoonBundle\EventListener\LeegNuListener'
+        arguments:
+            - '@messagebird.client'
+            - '%app_phone_enabled%'
+        tags:
+            - { name: doctrine.event_listener, event: postPersist, connection: default }
+    heel_en_schoon.encoder.json:
+        class: 'Symfony\Component\Serializer\Encoder\JsonEncoder'
+    heel_en_schoon.normalizer.ondernemersbak:
+        class: 'GemeenteAmsterdam\HeelEnSchoonBundle\Normalizer\OndernemersBakNormalizer'
+    heel_en_schoon.serializer.ondernemersbak:
+        class: 'Symfony\Component\Serializer\Serializer'
+        arguments:
+            0:
+                - '@heel_en_schoon.normalizer.ondernemersbak'
+            1:
+                - '@heel_en_schoon.encoder.json'
+    heel_en_schoon.service.dienst:
+        class: 'GemeenteAmsterdam\HeelEnSchoonBundle\Service\DienstService'
+        arguments:
+            - '@doctrine.orm.default_entity_manager'
+            
+    heel_en_schoon.form.type.ledigingsverzoek:
+        class: 'GemeenteAmsterdam\HeelEnSchoonBundle\Form\Type\LedigingsVerzoekFormType'
+        arguments:
+            - '@heel_en_schoon.form.datatransformer.ondernemersbaktonummer'
+        tags:
+            - { name: form.type }
+    heel_en_schoon.form.datatransformer.ondernemersbaktonummer:
+        class: 'GemeenteAmsterdam\HeelEnSchoonBundle\Form\DataTransformer\OndernemersBakToNummerTransformer'
+        arguments:
+            - '@doctrine.orm.default_entity_manager'

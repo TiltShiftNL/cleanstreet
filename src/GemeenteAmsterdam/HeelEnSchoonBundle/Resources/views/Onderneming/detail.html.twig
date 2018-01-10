@@ -1,0 +1,110 @@
+{% extends 'HeelEnSchoonBundle::concierge.html.twig' %}
+
+{% block main %}
+    <header class="section-header">
+        <h1>{{ onderneming.naam }}</h1>
+        <a href="{{ path('gemeenteamsterdam_heelenschoon_tickets_index', {'filter': 0, 'gebiedId': onderneming.gebied.id}) }}#ondernemers" class="back">
+            {% include 'HeelEnSchoonBundle:_icons:annuleren.svg.twig' %}
+        </a>
+        <a href="#bewerken" class="edit" data-handler="focus-first-field start-location-picker">Wijzig</a>
+    </header>
+    <article class="ticket-detail">
+        <div class="no-fotos"></div>
+        <div class="location" data-decorator="map"{% if onderneming.geoPoint %} data-center="{{ onderneming.geoPoint }}"{% else %} data-street="{{ onderneming.straat }} {{ onderneming.huisnummer }}"{% endif %}></div>
+        <h2>{{ onderneming.naam }}</h2>
+        <p class="text">{{ onderneming.straat }} {{ onderneming.huisnummer }}</p>
+{% if onderneming.telefoon %}
+        <p class="text"><a href="tel:{{ onderneming.telefoon }}">{{ onderneming.telefoon }}</a>
+{% endif %}
+{% if onderneming.email %}
+        <p class="text"><a href="mailto:{{ onderneming.email }}">{{ onderneming.email }}</a>
+{% endif %}
+{% if onderneming.ondernemersBakken|length > 0 %}
+    {% for ondernemersBak in onderneming.ondernemersBakken if ondernemersBak.verwijderd == false %}
+        <form method="post" class="delete" action="{{ path('gemeenteamsterdam_heelenschoon_ondernemersbak_remove', {'ondernemingId': onderneming.id, 'uuid': ondernemersBak.uuid, 'gebiedId': onderneming.gebied.id}) }}">
+            <span class="bak">{{ ondernemersBak.kenmerk }}</span>
+            <button type="submit" data-handler="confirm" data-confirm="Je gaat nu deze bak verwijderen.">Verwijder bak</button>
+        </form>
+    {% endfor %}
+{% endif %}
+        <form method="post" class="delete" action="{{ path('gemeenteamsterdam_heelenschoon_onderneming_remove', {'id': onderneming.id, 'gebiedId': onderneming.gebied.id}) }}">
+            <button type="submit" data-handler="confirm" data-confirm="Je gaat nu deze ondernemer verwijderen.">Verwijder ondernemer</button>
+        </form>
+    </article>
+    <footer class="section-footer">
+        <a href="#bak-toevoegen" data-handler="focus-first-field">
+            {% include 'HeelEnSchoonBundle:_icons:toevoegen.svg.twig' with {label: 'Bak toevoegen'} %}
+        </a>
+    </footer>
+{% endblock %}
+
+{% block views %}
+    <section class="section" id="section-bewerken">
+        {{ form_start(form) }}
+            <header class="section-header">
+                <h1 class="small">Ondernemer bewerken</h1>
+                <a href="#" class="back">
+                    {% include 'HeelEnSchoonBundle:_icons:annuleren.svg.twig' %}
+                </a>
+                <button type="submit">Bewaar</button>
+            </header>
+            <div class="field">
+                <label>Naam bedrijf
+                    {{ form_widget(form.naam) }}
+                </label>
+            </div>
+            <div class="field">
+                <label>Straat
+                    {{ form_widget(form.straat) }}
+                </label>
+            </div>
+            <div class="field">
+                <label>Huisnummer
+                    {{ form_widget(form.huisnummer) }}
+                </label>
+            </div>
+            <div class="field">
+                <label>
+                    Locatie
+                    <input type="hidden" name="{{ form.geoPoint.vars.full_name }}" value="{{ onderneming.geoPoint }}" id="location-picker-geo">
+                </label>
+                <div class="map" id="location-picker"></div>
+            </div>
+            <div class="field">
+                <label>E-mail
+                    {{ form_widget(form.email, {'required': false}) }}
+                </label>
+            </div>
+            <div class="field">
+                <label>Telefoon
+                    {{ form_widget(form.telefoon, {'required': false}) }}
+                </label>
+            </div>
+            <div class="field">
+                <label>Gebied
+                    {{ form_widget(form.gebied, {'required': false}) }}
+                </label>
+            </div>
+            {% do form.geoPoint.setRendered() %}
+        {{ form_end(form) }}
+    </section>
+
+    <section class="section" id="section-bak-toevoegen">
+        {{ form_start(ondernemersBakForm) }}
+            <header class="section-header">
+                <h1>Bak toevoegen</h1>
+                <a href="#" class="back">
+                    {% include 'HeelEnSchoonBundle:_icons:annuleren.svg.twig' %}
+                </a>
+                <button type="submit">Bewaar</button>
+            </header>
+            <div class="field">
+                <label>
+                    Baknummer
+                    <input name="{{ ondernemersBakForm.kenmerk.vars.full_name }}" type="tel" pattern="[0-9]*" inputmode="numeric" minlength="4" maxlength="4" required>
+                    {% do ondernemersBakForm.kenmerk.setRendered() %}
+                </label>
+            </div>
+        {{ form_end(ondernemersBakForm) }}
+    </section>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends 'HeelEnSchoonBundle::concierge.html.twig' %}
+
+{% block main %}
+    <header class="section-header">
+        <h1>{{ telefoonboekEntry.titel }}</h1>
+        <a href="{{ path('gemeenteamsterdam_heelenschoon_tickets_index', {'filter': 0, 'gebiedId': gebied.id}) }}#diensten" class="back">
+            {% include 'HeelEnSchoonBundle:_icons:annuleren.svg.twig' %}
+        </a>
+        <a href="#bewerken" class="edit" data-handler="focus-first-field">Wijzig</a>
+    </header>
+    <article class="ticket-detail">
+        <div class="no-fotos"></div>
+        <h2>{{ telefoonboekEntry.titel }}</h2>
+        <p class="text">{{ telefoonboekEntry.omschrijving }}</p>
+{% if telefoonboekEntry.telefoon %}
+        <p class="text"><a href="tel:{{ telefoonboekEntry.telefoon }}">{{ telefoonboekEntry.telefoon }}</a>
+{% endif %}
+{% if telefoonboekEntry.email %}
+        <p class="text"><a href="mailto:{{ telefoonboekEntry.email }}">{{ telefoonboekEntry.email }}</a>
+{% endif %}
+{% if telefoonboekEntry.url %}
+        <p class="text"><a href="{{ telefoonboekEntry.url }}" target="_blank">Website</a>
+{% endif %}
+        <form method="post" class="delete" action="{{ path('gemeenteamsterdam_heelenschoon_telefoonboekentry_remove', {'gebiedId': gebied.id, 'id': telefoonboekEntry.id}) }}">
+            <button type="submit" data-handler="confirm" data-confirm="Je gaat nu deze dienst verwijderen.">Verwijder dienst</button>
+        </form>
+    </article>
+{% endblock %}
+
+{% block views %}
+    <section class="section" id="section-bewerken">
+        {{ form_start(form) }}
+            <header class="section-header">
+                <h1>Dienst bewerken</h1>
+                <a href="#" class="back">
+                    {% include 'HeelEnSchoonBundle:_icons:annuleren.svg.twig' %}
+                </a>
+                <button type="submit">Bewaar</button>
+            </header>
+            <div class="field">
+                <label>
+                    Titel
+                    {{ form_widget(form.titel) }}
+                </label>
+            </div>
+            <div class="field">
+                <label>
+                    Omschrijving
+                    {{ form_widget(form.omschrijving) }}
+                </label>
+            </div>
+            <div class="field">
+                <label>
+                    E-mail
+                    {{ form_widget(form.email) }}
+                </label>
+            </div>
+            <div class="field">
+                <label>
+                    Telefoon
+                    {{ form_widget(form.telefoon) }}
+                </label>
+            </div>
+            <div class="field">
+                <label>
+                    Website
+                    {{ form_widget(form.url) }}
+                </label>
+            </div>
+        {{ form_end(form) }}
+    </section>
+{% endblock %}

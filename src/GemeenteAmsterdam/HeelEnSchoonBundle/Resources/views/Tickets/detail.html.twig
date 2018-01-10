@@ -1,0 +1,255 @@
+{% extends 'HeelEnSchoonBundle::concierge.html.twig' %}
+
+{% block main %}
+    <header class="section-header">
+        <h1>Ticket</h1>
+{% if app.request.query.get('return') == 'dashboard' %}
+        <a href="{{ path('gemeenteamsterdam_heelenschoon_dashboard_index', {'datumAangemaakt': ticket.datumTijdAangemaakt|date('Y-m-d'), '_fragment': 'ticket-' ~ ticket.id}) }}" class="back" data-label="Dashboard">
+            {% include 'HeelEnSchoonBundle:_icons:terug.svg.twig' with {'label': 'Dashboard'} %}
+        </a>
+{% else %}
+        <a href="{{ path('gemeenteamsterdam_heelenschoon_tickets_index', {'gebiedId': ticket.gebied.id, 'filter': filter, 'datum': ticket.datumTijdAangemaakt|date('Y-m-d'), '_fragment': 'ticket-' ~ ticket.id}) }}" class="back" data-label="Alle tickets">
+            {% include 'HeelEnSchoonBundle:_icons:terug.svg.twig' with {'label': 'Alle tickets'} %}
+        </a>
+{% endif %}
+    </header>
+    <article class="ticket-detail" id="ticket-{{ ticket.id }}" data-id="{{ ticket.id }}">
+{% if ticket.fotos|default({})|length > 0 %}
+        <div class="fotos">
+{% for foto in ticket.fotos %}
+            <a href="{{ vich_uploader_asset(foto, 'imageFile')|imagine_filter('thumbnail1000') }}" class="img">
+                <img src="{{ vich_uploader_asset(foto, 'imageFile')|imagine_filter('thumbnail480') }}" alt="">
+            </a>
+{% endfor %}
+        </div>
+{% else %}
+        <div class="no-fotos{% if ticket.type == 'ledigingsverzoek' %} pattern-bak{% endif %}"></div>
+{% endif %}
+        <div class="location" data-decorator="map"{% if ticket.geo %} data-center="{{ ticket.geo }}"{% elseif ticket.onderneming %} data-street="{{ ticket.onderneming.straat }} {{ ticket.onderneming.huisnummer }}"{% elseif ticket.straat %} data-street="{{ ticket.straat }}"{% endif %}></div>
+{% if ticket.status == false %}
+        <p class="status">Open</p>
+{% elseif ticket.type == 'ledigingsverzoek' %}
+        <p class="status status-gesloten">Geleegd</p>
+{% else %}
+        <p class="status status-gesloten">Gesloten: {{ ticket.oplossing }}</p>
+{% endif %}
+        <p class="meta">
+            <span>{{ ticket.datumTijdAangemaakt|localizeddate('none', 'none', 'nl', false, 'EE d MMM') }}</span>
+            <span>{% if ticket.medewerker %}{{ ticket.medewerker.naam }}, {% endif %}{{ ticket.datumTijdAangemaakt|localizeddate('none', 'none', 'nl', false, 'kk:mm') }}</span>
+        </p>
+{% if ticket.type == 'ledigingsverzoek' %}
+        <p class="todo-bak{% if ticket.status %} done{% endif %}">{{ ticket.ondernemersBak.kenmerk }}</p>
+{% endif %}
+{% if ticket.onderneming %}
+        <h2>{{ ticket.onderneming.naam }}</h2>
+        <p class="street">{{ ticket.onderneming.straat }} {{ ticket.onderneming.huisnummer }}</p>
+{% elseif ticket.straat %}
+        <p class="street">{{ ticket.straat }}</p>
+{% endif %}
+{% if ticket.type == 'notitie' %}
+        <p class="text">{{ ticket.tekst|nl2br }}</p>
+{% endif %}
+        <h3>Updates</h3>
+        <section class="tickets">
+{% set zichtbareActies = false %}
+{% for actie in ticket.acties if actie.verwijderd == false %}
+    {% set zichtbareActies = true %}
+        <article class="ticket type-{{ actie.type }}" id="ticket-{{ actie.id }}">
+            <p class="meta">
+                <span>{{ actie.datumTijdAangemaakt|localizeddate('none', 'none', 'nl', false, 'EE d MMM') }}</span>
+                <span>{% if actie.medewerker %}{{ actie.medewerker.naam }}, {% endif %}{{ actie.datumTijdAangemaakt|localizeddate('none', 'none', 'nl', false, 'kk:mm') }}</span>
+            </p>
+    {% if actie.type == 'bel' %}
+            <p>{{ actie.telefoonboekEntry.titel }}</p>
+    {% elseif actie.type == 'notitie' %}
+            <p>{{ actie.tekst|nl2br }}</p>
+    {% elseif actie.type == 'status' %}
+            <p>Ticket {{ actie.nieuweStatus ? 'gesloten' : 'heropend' }}{% if actie.nieuweOplossing %}: <b>{{ actie.nieuweOplossing }}</b>{% endif %}</p>
+    {% elseif actie.type == 'foto' %}
+            <div class="fotos">
+        {% for foto in actie.fotos %}
+                <a href="{{ vich_uploader_asset(foto, 'imageFile')|imagine_filter('thumbnail1000') }}" class="img">
+                    <img src="{{ vich_uploader_asset(foto, 'imageFile')|imagine_filter('thumbnail480') }}" alt="">
+                </a>
+        {% endfor %}
+            </div>
+    {% endif %}
+    {% if actie.type != 'status' %}
+            <form action="{{ path('gemeenteamsterdam_heelenschoon_acties_remove', {'gebiedId': ticket.gebied.id, 'ticketId': ticket.id, 'actieId': actie.id}) }}" method="POST" class="delete">
+                <button type="submit" data-handler="confirm" data-confirm="Je gaat nu deze update verwijderen.">Verwijder update</button>
+            </form>
+    {% endif %}
+        </article>
+{% endfor %}
+{% if not zichtbareActies %}
+    <p><i>Nog geen updates.</i></p>
+{% endif %}
+        </section>
+        <form action="{{ path('gemeenteamsterdam_heelenschoon_tickets_remove', {'gebiedId': ticket.gebied.id, 'id': ticket.id}) }}" method="POST" class="delete">
+            <button type="submit" data-handler="confirm" data-confirm="Je gaat nu dit ticket verwijderen.">Verwijder ticket</button>
+        </form>
+    </article>
+    <footer class="section-footer">
+        <button data-handler="open-action-sheet">
+            {% include 'HeelEnSchoonBundle:_icons:meer.svg.twig' %}
+        </button>
+        <section class="action-sheet">
+            <div>
+                <header>
+                    <h2>Update ticket</h2>
+                    <button data-handler="close-action-sheet">
+                        {% include 'HeelEnSchoonBundle:_icons:annuleren.svg.twig' %}
+                    </button>
+                </header>
+                <ul>
+                    <li>
+                        <a href="#omschrijving-toevoegen" data-handler="close-action-sheet focus-first-field">
+                            {% include 'HeelEnSchoonBundle:_icons:notitie.svg.twig' %}
+                            Omschrijving toevoegen
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#foto-toevoegen" data-handler="close-action-sheet focus-first-field">
+                            {% include 'HeelEnSchoonBundle:_icons:foto.svg.twig' %}
+                            Foto toevoegen
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#selecteer-dienst" data-handler="close-action-sheet">
+                            {% include 'HeelEnSchoonBundle:_icons:telefoon.svg.twig' with {label: false} %}
+                            Dienst toevoegen
+                        </a>
+                    </li>
+{% if ticket.status == false %}
+    {% if ticket.type == 'ledigingsverzoek' %}
+                    <li class="separator">
+                        <form method="post" action="{{ path('gemeenteamsterdam_heelenschoon_tickets_changestatus', {'gebiedId': ticket.gebied.id, 'ticketId': ticket.id}) }}">
+                            <input type="hidden" name="status" value="1">
+                            <input type="hidden" name="oplossing" value="geleegd">
+                            <button type="submit">
+                                {% include 'HeelEnSchoonBundle:_icons:bak.svg.twig' %}
+                                Sluiten: <b>geleegd</b>
+                            </button>
+                        </form>
+                    </li>
+    {% else %}
+                    <li class="separator">
+                        <form method="post" action="{{ path('gemeenteamsterdam_heelenschoon_tickets_changestatus', {'gebiedId': ticket.gebied.id, 'ticketId': ticket.id}) }}">
+                            <input type="hidden" name="status" value="1">
+                            <input type="hidden" name="oplossing" value="opgelost">
+                            <button type="submit">
+                                {% include 'HeelEnSchoonBundle:_icons:opgelost.svg.twig' %}
+                                Sluiten: <b>opgelost</b>
+                            </button>
+                        </form>
+                    </li>
+                    <li>
+                        <form method="post" action="{{ path('gemeenteamsterdam_heelenschoon_tickets_changestatus', {'gebiedId': ticket.gebied.id, 'ticketId': ticket.id}) }}">
+                            <input type="hidden" name="status" value="1">
+                            <input type="hidden" name="oplossing" value="niet opgelost">
+                            <button type="submit">
+                                {% include 'HeelEnSchoonBundle:_icons:niet-opgelost.svg.twig' %}
+                                Sluiten: <b>niet opgelost</b>
+                            </button>
+                        </form>
+                    </li>
+                    <li>
+                        <form method="post" action="{{ path('gemeenteamsterdam_heelenschoon_tickets_changestatus', {'gebiedId': ticket.gebied.id, 'ticketId': ticket.id}) }}">
+                            <input type="hidden" name="status" value="1">
+                            <input type="hidden" name="oplossing" value="onbekend">
+                            <button type="submit">
+                                {% include 'HeelEnSchoonBundle:_icons:vraagteken.svg.twig' %}
+                                Sluiten: <b>onbekend</b>
+                            </button>
+                        </form>
+                    </li>
+    {% endif %}
+{% else %}
+                    <li class="separator">
+                        <form method="post" action="{{ path('gemeenteamsterdam_heelenschoon_tickets_changestatus', {'gebiedId': ticket.gebied.id, 'ticketId': ticket.id}) }}">
+                            <input type="hidden" name="status" value="0">
+                            <input type="hidden" name="oplossing" value="">
+                            <button type="submit">
+                                {% include 'HeelEnSchoonBundle:_icons:heropenen.svg.twig' %}
+                                Ticket heropenen
+                            </button>
+                        </form>
+                    </li>
+{% endif %}
+                </ul>
+            </div>
+        </section>
+    </footer>
+{% endblock %}
+
+{% block views %}
+    <section class="section" id="section-selecteer-dienst">
+        <header class="section-header">
+            <h1>Dienst selecteren</h1>
+            <a href="#" class="back">
+                {% include 'HeelEnSchoonBundle:_icons:annuleren.svg.twig' %}
+            </a>
+        </header>
+        <form class="search" method="get" action="#diensten">
+            <input type="search" data-decorator="search-filter" placeholder="Zoek dienst">
+        </form>
+        <div class="list">
+            <ul>
+{% for dienst in diensten if dienst.verwijderd == false %}
+                <li>
+                    <div>
+                        <h3>{{ dienst.titel }}</h3>
+                        <p>{{ dienst.omschrijving }}</p>
+                    </div>
+                    <button class="option" data-handler="selecteer-dienst" data-url="{{ path('gemeenteamsterdam_heelenschoon_acties_createbel', {'gebiedId': ticket.gebied.id, 'ticketId': ticket.id}) }}" data-telefoonboekentry-id="{{ dienst.id }}">
+                        {% include 'HeelEnSchoonBundle:_icons:plus.svg.twig' with {label: 'Selecteer dienst'} %}
+                    </button>
+{% if dienst.telefoon %}
+                    <a class="tel" href="tel:{{ dienst.telefoon }}" data-handler="selecteer-dienst" data-url="{{ path('gemeenteamsterdam_heelenschoon_acties_createbel', {'gebiedId': ticket.gebied.id, 'ticketId': ticket.id}) }}" data-telefoonboekentry-id="{{ dienst.id }}">
+                        {% include 'HeelEnSchoonBundle:_icons:telefoon.svg.twig' %}
+                    </a>
+{% endif %}
+                </li>
+{% endfor %}
+            </ul>
+        </div>
+    </section>
+
+    <section class="section" id="section-omschrijving-toevoegen">
+        {{ form_start(notitieActieForm) }}
+            <header class="section-header">
+                <h1 class="small">Omschrijving toevoegen</h1>
+                <a href="#" class="back">
+                    {% include 'HeelEnSchoonBundle:_icons:annuleren.svg.twig' %}
+                </a>
+                <button type="submit">Bewaar</button>
+            </header>
+            <div class="field">
+                <label>
+                    Omschrijving
+                    {{ form_widget(notitieActieForm.tekst, {'attr': {'required': true}}) }}
+                </label>
+            </div>
+        {{ form_end(notitieActieForm) }}
+    </section>
+    
+    <section class="section" id="section-foto-toevoegen">
+        {{ form_start(fotoActieForm) }}
+            <header class="section-header">
+                <h1>Foto toevoegen</h1>
+                <a href="#" class="back">
+                    {% include 'HeelEnSchoonBundle:_icons:annuleren.svg.twig' %}
+                </a>
+                <button type="submit">Bewaar</button>
+            </header>
+            <div class="field-special">
+                <label>
+                    Foto toevoegen
+                    <input type="file" accept="image/*" name="{{ fotoActieForm.fotos[0].imageFile.vars.full_name }}[file]" multiple required>
+                    {% do fotoActieForm.fotos.setRendered() %}
+                </label>
+            </div>
+        {{ form_end(fotoActieForm) }}
+    </section>
+
+{% endblock %}

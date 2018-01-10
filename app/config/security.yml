@@ -1,0 +1,25 @@
+security:
+    encoders:
+        GemeenteAmsterdam\HeelEnSchoonBundle\Entity\Medewerker: bcrypt
+    providers:
+        medewerkers:
+            entity:
+                class: HeelEnSchoonBundle:Medewerker
+                property: id
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+        main:
+            pattern: ^/
+            anonymous: ~
+            form_login:
+                login_path: gemeenteamsterdam_heelenschoon_security_login
+                check_path: gemeenteamsterdam_heelenschoon_security_login
+                csrf_token_generator: security.csrf.token_manager
+                always_use_default_target_path: true
+                default_target_path: /tickets
+            provider: medewerkers
+            logout:
+                path: /logout
+                target: /tickets

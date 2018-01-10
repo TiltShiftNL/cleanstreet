@@ -1,0 +1,15 @@
+{% extends 'HeelEnSchoonBundle::concierge.html.twig' %}
+
+{% block main %}
+    <header class="section-header">
+        <h1>Waar werk je vandaag</h1>
+    </header>
+    <article class="gebied-selector">
+    	{% for gebied in gebieden %}
+    		<a href="{{ path('gemeenteamsterdam_heelenschoon_tickets_index', {'gebiedId': gebied.id}) }}" class="{{ app_dienst_service.getDienst(gebied.id) ? 'active' : 'inactive' }}">
+    		    <strong>{{ gebied.naam }}</strong>
+    		    <em>{{ gebied.telefoon }}</em> - dienst staat <span>{{ app_dienst_service.getDienst(gebied.id) ? 'AAN' : 'UIT' }}</span>
+		    </a>
+    	{% endfor %}
+    </article>
+{% endblock %}

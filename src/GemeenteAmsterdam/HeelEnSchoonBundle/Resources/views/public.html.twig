@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="nl">
+    <head>
+        <title>Bak vol?</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width">
+        <style>
+        *, :before, :after { box-sizing: inherit; }
+        html { box-sizing: border-box; }
+        html, body, ul, li, p { margin: 0; padding: 0; }
+        body { font-family: sans-serif; color: #000; line-height: 1.5; padding-bottom: 4.5rem; }
+        h1 { margin: 0 0 1rem; padding: 1.5rem; text-align: center; background: #ffcc24; font-weight: 400; font-size: 2rem; line-height: 1.2; box-shadow: 0 2px 4px rgba(0, 0, 0, .2); }
+            h1 small { display: block; font-size: 1.2rem; }
+        form { max-width: 20rem; margin: 0 auto; padding: 0 1rem; }
+            label { display: block; margin: 1rem 0; text-align: center; font-size: 1.3rem; }
+                label small { display: block; font-size: .9rem; transition: .2s ease-out; max-height: 2rem; overflow: hidden; }
+        a { color: inherit; border-bottom: 3px solid #ffcc24; text-decoration: none; transition: .2s ease-out; }
+        a:focus, a:hover { border-color: #ebb000; }
+        .enter-number .input { font-size: 6rem; width: 4.3ch; font-family: monospace; margin: 1rem auto .2rem; padding: .1rem; display: block; border: 3px solid; border-radius: 5px; background: url(/img/lines.png) no-repeat 0 100%; background-size: 100% 20px; -moz-appearance: textfield; }
+        .enter-number ::-webkit-inner-spin-button { display: none; }
+        .enter-number ::-webkit-input-placeholder { color: #ccc; }
+        .enter-number ::-moz-placeholder { color: #ccc; }
+        .enter-number :-ms-input-placeholder { color: #ccc; }
+        .enter-number :-moz-placeholder { opacity: 1; color: #ccc; }
+        .enter-number .submit { display: block; text-align: center; width: 100%; color: #000; font-size: 1.2rem; border: none; border-radius: 5px; margin: 0 auto; padding: 1rem; width: 220px; -webkit-appearance: none; transition: .2s ease-out; transition-property: opacity, background-color; opacity: .4; background: lightgrey; cursor: default; }
+        .enter-number.is-valid small { margin-bottom: -.2rem; max-height: 0; }
+        .enter-number.is-valid .submit { background: #ffcc24; cursor: pointer; opacity: 1; box-shadow: 0 2px 4px rgba(0, 0, 0, .2); }
+        .enter-number.is-valid .submit:focus, .enter-number.is-valid .submit:hover { background: #ebb000; }
+        .info { max-width: 30rem; margin: 1rem auto 0; padding: 1rem; text-align: left; }
+        form + .info { text-align: center; }
+            .info > * + * { margin: 1em 0 0; }
+            .info h2 { font-weight: normal; font-size: 1.6rem; }
+            .info h3 { font-size: 1rem; margin-bottom: -1em; }
+            .info ul { margin-left: 2em; }
+        .bak { max-height: 0; overflow: hidden; visibility: hidden; opacity: 0; transition: .2s ease-out; border-radius: 5px; padding: 0 1rem 0 2.3rem; background: #eee url('data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2032%2032%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M16%200c-5.523%200-10%204.477-10%2010%200%2010%2010%2022%2010%2022s10-12%2010-22c0-5.523-4.477-10-10-10zM16%2016c-3.314%200-6-2.686-6-6s2.686-6%206-6%206%202.686%206%206-2.686%206-6%206z%22%3E%3C%2Fpath%3E%3C%2Fsvg%3E') no-repeat 1rem 1.2rem; background-size: 16px; }
+        .bak.is-active { max-height: 5rem; margin-bottom: 1rem; padding-top: 1rem; padding-bottom: 1rem; visibility: visible; opacity: 1; }
+            .bak b { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .errors { color: red; list-style: none; transition: .2s ease-out; max-height: 4rem; overflow: hidden; }
+        .errors.irrelevant { max-height: 0; margin-bottom: -1rem; }
+            .errors + p > label small { color: red; }
+        nav { position: fixed; bottom: 0; left: 0; right: 0; }
+            nav ul { display: flex; width: 100%; }
+                nav li { list-style: none; flex: auto; }
+                    nav a { display: block; line-height: 3.5rem; padding: 0 1em; text-align: center; background: #fff; border: none; border-top: 3px solid #ccc; border-right: 1px solid #ccc; }
+                    nav a:hover, nav a:focus { border-color: #ccc; border-top-color: #ebb000; }
+                    nav li:last-child a { border-right: none; }
+                    .nav-home #nav-home, .nav-info #nav-info, .nav-faq #nav-faq { border-top-color: #ffcc24; }
+        </style>
+    </head>
+    <body>
+        {% block document %}no content{% endblock %}
+    </body>
+</html>
