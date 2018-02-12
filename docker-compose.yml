@@ -28,14 +28,7 @@ services:
         SYMFONY__CLEANSTREET__MAILER_PORT: "25"
         SYMFONY__CLEANSTREET__MAILER_ENCRYPTION: "null" # null, ssl, tls
         SYMFONY__CLEANSTREET__SECRET: "insecure" # random
-        SYMFONY__CLEANSTREET__MAIL_FROM: "service@website-domain"
-        SYMFONY__CLEANSTREET__MAIL_CC: "service@website-domain"
-        SYMFONY__CLEANSTREET__RETENTION_POLICY: "P14D"
-        SYMFONY__CLEANSTREET__REQUEST_CONTEXT_HOST: "website-domain" # domain, scheme and base url for links in e-mails
-        SYMFONY__CLEANSTREET__REQUEST_CONTEXT_SCHEME: "https"
-        SYMFONY__CLEANSTREET__REQUEST_CONTEXT_BASE_URL: ""
-        SYMFONY__CLEANSTREET__MESSAGEBIRD_ENABLE: "false"
-        SYMFONY__CLEANSTREET__MESSAGEBIRD_API_KEY: "insecure"
-        SYMFONY__CLEANSTREET__SMS_ORGINATOR: "service-name"
+        SYMFONY__CLEANSTREET__APP_PHONE_ENABLED: "true"
+        SYMFONY__CLEANSTREET__APP_MESSAGEBIRD_KEY: "insecure"
         SYMFONY__CLEANSTREET__PIWIK_SITE_ID: "null" # null for no piwik integration
-        SYMFONY__CLEANSTREET__TRUSTED_PROXIES: "192.168.0.0/16"
+
