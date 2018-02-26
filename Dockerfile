@@ -19,7 +19,6 @@ RUN mkdir -p /srv/web/heelenschoon
 COPY . /srv/web/heelenschoon
 WORKDIR /srv/web
 COPY /Docker/parameters.yml /srv/web/heelenschoon/app/config/parameters.yml
-COPY /Docker/parameters_env.php /srv/web/heelenschoon/app/config/parameters_env.php
 #COPY /Docker/fix-null-values.php /srv/web/heelenschoon/app/config/fix-null-values.php
 RUN wget https://getcomposer.org/composer.phar
 
