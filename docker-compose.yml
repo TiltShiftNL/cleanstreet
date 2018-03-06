@@ -2,12 +2,15 @@ version: "3.2"
 
 services:
     database:
-      image: postgres:latest
+      image: amsterdam/postgres
       ports:
         - "5402:5432"
       environment:
+        POSTGRES_HOST: localhost
         POSTGRES_PASSWORD: insecure
-        
+        POSTGRES_DB: cleanstreet
+        POSTGRES_USER: cleanstreet
+
     web:
       build: .
       ports:
@@ -18,8 +21,8 @@ services:
       environment:
         SYMFONY__CLEANSTREET__DATABASE_HOST: database
         SYMFONY__CLEANSTREET__DATABASE_PORT: "5432"
-        SYMFONY__CLEANSTREET__DATABASE_NAME: "postgres"
-        SYMFONY__CLEANSTREET__DATABASE_USER: "postgres"
+        SYMFONY__CLEANSTREET__DATABASE_NAME: "cleanstreet"
+        SYMFONY__CLEANSTREET__DATABASE_USER: "cleanstreet"
         SYMFONY__CLEANSTREET__DATABASE_PASSWORD: "insecure"
         SYMFONY__CLEANSTREET__MAILER_TRANSPORT: "smtp"
         SYMFONY__CLEANSTREET__MAILER_HOST: ""
