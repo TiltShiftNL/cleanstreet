@@ -4,10 +4,6 @@ parameters:
     database_name: '%cleanstreet.database.name%'
     database_user: '%cleanstreet.database.user%'
     database_password: '%cleanstreet.database.password%'
-    mailer_transport: '%cleanstreet.mailer.transport%'
-    mailer_host: '%cleanstreet.mailer.host%'
-    mailer_user: '%cleanstreet.mailer.user%'
-    mailer_password: '%cleanstreet.mailer.password%'
     secret: '%cleanstreet.secret%'
     app_phone_number: 'insecure'
     app_messagebird_key: insecure
