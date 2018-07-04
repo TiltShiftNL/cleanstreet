@@ -12,6 +12,8 @@ use GemeenteAmsterdam\HeelEnSchoonBundle\Form\DataTransformer\OndernemersBakToNu
 use GemeenteAmsterdam\HeelEnSchoonBundle\Entity\LedigingsVerzoek;
 use GemeenteAmsterdam\HeelEnSchoonBundle\Entity\Ticket;
 use GemeenteAmsterdam\HeelEnSchoonBundle\Entity\Gebied;
+use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Form\FormEvent;
 
 class LeegNuController extends Controller
 {
@@ -31,6 +33,21 @@ class LeegNuController extends Controller
         $formBuilder = $this->createFormBuilder($ledigingsVerzoek);
         $formBuilder->add('ondernemersBak', TextType::class);
         $formBuilder->get('ondernemersBak')->addModelTransformer(new OndernemersBakToNummerTransformer($this->getDoctrine()->getManager()));
+        $formBuilder->addEventListener(FormEvents::SUBMIT, function (FormEvent $event) {
+            /** @var $ondernemersBak OndernemersBak */
+            $ondernemersBak = $event->getForm()->get('ondernemersBak')->getData();
+            /** @var $ledigingsVerzoek LedigingsVerzoek */
+            $ledigingsVerzoek = $event->getData();
+            $ledigingsVerzoek->setBron(Ticket::BRON_HANDMATIG);
+            $ledigingsVerzoek->setGeo($ondernemersBak->getOnderneming()->getGeoPoint());
+            $ledigingsVerzoek->setHuisnummer($ondernemersBak->getOnderneming()->getHuisnummer());
+            $ledigingsVerzoek->setOndernemersBak($ondernemersBak);
+            $ledigingsVerzoek->setOnderneming($ondernemersBak->getOnderneming());
+            $ledigingsVerzoek->setStatus(true);
+            $ledigingsVerzoek->setStraat($ondernemersBak->getOnderneming()->getStraat());
+            $ledigingsVerzoek->setOplossing(Ticket::OPLOSSING_GELEEGD);
+            $ledigingsVerzoek->setGebied($ondernemersBak->getOnderneming()->getGebied());
+        });
         $form = $formBuilder->getForm();
 
         $form->handleRequest($request);
@@ -38,15 +55,6 @@ class LeegNuController extends Controller
         if ($form->isSubmitted() && $form->isValid()) {
             /** @var $ondernemersBak OndernemersBak */
             $ondernemersBak = $form->get('ondernemersBak')->getData();
-
-            $ledigingsVerzoek->setBron(Ticket::BRON_LEEGNU);
-            $ledigingsVerzoek->setGeo($ondernemersBak->getOnderneming()->getGeoPoint());
-            $ledigingsVerzoek->setHuisnummer($ondernemersBak->getOnderneming()->getHuisnummer());
-            $ledigingsVerzoek->setOndernemersBak($ondernemersBak);
-            $ledigingsVerzoek->setOnderneming($ondernemersBak->getOnderneming());
-            $ledigingsVerzoek->setStatus(false);
-            $ledigingsVerzoek->setStraat($ondernemersBak->getOnderneming()->getStraat());
-            $ledigingsVerzoek->setGebied($ondernemersBak->getOnderneming()->getGebied());
 
             $this->getDoctrine()->getManager()->persist($ledigingsVerzoek);
             $this->getDoctrine()->getManager()->flush();

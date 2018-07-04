@@ -56,7 +56,7 @@ abstract class Ticket
 
     /**
      * @var int
-     * @ORM\Column
+     * @ORM\Column(type="bigint", nullable=false)
      * @ORM\Id
      * @ORM\GeneratedValue
      */
@@ -123,6 +123,7 @@ abstract class Ticket
      * @var string
      * @ORM\Column(type="string", length=255, nullable=true)
      * @Assert\Length(min=0, max=255)
+     * @Assert\NotBlank
      */
     private $straat;
 
@@ -130,6 +131,7 @@ abstract class Ticket
      * @var string
      * @ORM\Column(type="string", length=50, nullable=true)
      * @Assert\Length(min=0, max=50)
+     * @Assert\NotBlank
      */
     private $huisnummer;
 
@@ -159,6 +161,7 @@ abstract class Ticket
         $this->verwijderd = false;
         $this->acties = new ArrayCollection();
         $this->status = false;
+        $this->oplossing = self::OPLOSSING_GEEN;
     }
 
     abstract public function getType();

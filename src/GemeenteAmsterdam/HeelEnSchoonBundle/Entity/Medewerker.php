@@ -4,6 +4,7 @@ namespace GemeenteAmsterdam\HeelEnSchoonBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Security\Core\User\AdvancedUserInterface;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 /**
  * @ORM\Entity
@@ -42,6 +43,12 @@ class Medewerker implements AdvancedUserInterface
     private $password;
 
     /**
+     * @var boolean
+     * @ORM\Column(type="boolean", nullable=false)
+     */
+    private $admin;
+
+    /**
      * Non mapped!
      * @var string
      */
@@ -50,6 +57,7 @@ class Medewerker implements AdvancedUserInterface
     public function __construct()
     {
         $this->actief = true;
+        $this->admin = false;
     }
 
     /**
@@ -124,6 +132,9 @@ class Medewerker implements AdvancedUserInterface
      */
     public function getRoles()
     {
+        if ($this->isAdmin()) {
+            return ['ROLE_USER', 'ROLE_ADMIN'];
+        }
         return ['ROLE_USER'];
     }
 
@@ -192,5 +203,28 @@ class Medewerker implements AdvancedUserInterface
     public function isCredentialsNonExpired()
     {
         return true;
+    }
+
+    public function setAdmin($admin)
+    {
+        $this->admin = $admin;
+    }
+
+    public function isAdmin()
+    {
+        return $this->admin;
+    }
+
+    /**
+     * @Assert\Callback
+     */
+    public function isPasswordSet(ExecutionContextInterface $context)
+    {
+        if ($this->password === '' || $this->password === null) {
+            $context
+                ->buildViolation('Voer een wachtwoord in')
+                ->atPath('plainPassword')
+                ->addViolation();
+        }
     }
 }

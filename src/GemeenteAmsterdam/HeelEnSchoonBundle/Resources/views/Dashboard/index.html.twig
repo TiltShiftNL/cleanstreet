@@ -1,170 +1,410 @@
-{% extends 'HeelEnSchoonBundle:Dashboard:_base.html.twig' %}
-
-{% block body %}
+<!doctype html>
+<html lang="nl">
+    <head>
+        <title>cleanstreet dashboard</title>
+        <script>if('querySelector' in document){document.documentElement.className='is-enhanced';}</script>
+        <link rel="stylesheet" href="//fast.fonts.net/cssapi/4059b458-6351-4fb4-ae92-bdd910ee5e85.css">
+        <link rel="stylesheet" href="/assets/css/daterangepicker.css">
+        <link rel="stylesheet" href="/assets/css/leaflet.css">
+        {% set stati = {
+            'geen': 'Geen',
+            'niet opgelost': 'Niet opgelost',
+            'opgelost': 'Opgelost',
+            'onbekend': 'Onbekend',
+            'geleegd': 'Geleegd'
+        } %}
+        <style>
+            html, body, h1, h2, h3, p, form, fieldset, legend, ul, li, dl, dt, dd { margin: 0; padding: 0; }
+            html { font-family: 'Avenir Next W01', 'Avenir', sans-serif; scroll-behavior: smooth; }
+            input, select, button { font-size: 100%; font-family: inherit; }
+            .container { width: 90%; max-width: 1280px; margin: 0 auto; }
+            .header { background: #00AF66; padding: 20px 0; color: #fff; }
+                .header-img { vertical-align: middle; }
+                .header-container { padding: 10px 0; background: url('/img/adam-logo.svg') no-repeat 100% 50%; background-size: 125px 56px; }
+            .filters-header { margin: 0 0 20px; padding: 7px 0; background: #007C48; white-space: nowrap; overflow: auto; -webkit-overflow-scrolling: touch; }
+                .filters-container { display: flex; align-items: center; }
+                .filters-header-label { line-height: 37px; margin-right: 20px; }
+                    .filters-header label span { position: absolute; left: -9999px; }
+                    .filters-header-div { margin-right: 20px; background: #fff; border-radius: 3px; }
+                    .is-enhanced .filters-header-div { position: relative; }
+                        .is-enhanced .filters-header-label-date::after { content: ''; position: absolute; top: 0; right: 0; left: 0; bottom: 0; }
+                            .filters-header-svg { width: 14px; height: 14px; margin: 0 0 0 10px; display: inline-block; }
+                            .filters-header-date { height: 37px; margin: 0; background: none; padding: 5px; border: none; box-sizing: border-box; }
+                    .filters-header-input, .filters-header-select { height: 37px; margin: 0; padding: 5px 10px; border: none; border-radius: 3px; box-sizing: border-box; vertical-align: top; }
+                    .filters-header-button { line-height: 33px; background: rgba(0, 0, 0, .35); color: #fff; margin-right: 20px; padding: 0 10px; text-transform: lowercase; border: none; text-decoration: none; cursor: pointer; border-radius: 3px; }
+                    .filters-header-button:last-child { margin-right: 0; margin-left: auto; }
+            .filters-sidebar { float: left; width: 18em; }
+                .filters-sidebar-h2 { height: 39px; font-size: 24px; border-bottom: 1px solid #E8E8E8; }
+                .filters-sidebar-fieldset { border: none; margin: 20px 0; }
+                    .filters-sidebar-legend { color: #00AF66; font-size: 22px; font-weight: bold; text-transform: lowercase; }
+                    .filters-sidebar fieldset div { background: #F5F5F5; padding: 15px 0; }
+                        .filters-sidebar-label { display: block; clear: both; display: flex; line-height: 25px; align-items: center; padding: 0 15px; text-transform: lowercase; }
+                        .filters-sidebar-label-indented { padding-left: 40px; }
+                            .filters-sidebar-input { margin-right: .5em; }
+                            .filters-sidebar-em { margin-left: auto; float: right; font-size: 18px; font-weight: bold; font-style: normal; }
+            .tickets { margin-left: 19em; }
+                .tickets-tabs { display: none; height: 39px; margin-bottom: 7px; border-bottom: 1px solid #E8E8E8; list-style: none; }
+                .is-enhanced .tickets-tabs { display: block; }
+                    .tickets-tabs-li { display: inline-block; }
+                        .tickets-tabs-a { display: block; line-height: 39px; padding: 0 10px; text-transform: lowercase; color: #747474; text-decoration: none; font-weight: bold; }
+                        #fotos:not(:target) ~ .filters .tickets-tabs-li:first-child .tickets-tabs-a,
+                        #kaart:target ~ .filters .tickets-tabs-li:first-child .tickets-tabs-a,
+                        #fotos:target ~ .filters .tickets-tabs-li:last-child .tickets-tabs-a { background: #F5F5F5; color: #121212; }
+                        #fotos:not(:target) ~ .filters .ticket-grid,
+                        #kaart:target ~ .filters .ticket-grid,
+                        #fotos:target ~ .filters .map { display: none; }
+                .ticket-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; grid-gap: 10px; }
+                    .ticket-grid > .ticket { padding: 10px; border: 1px solid #F5F5F5; }
+                    .is-enhanced .ticket { display: none; }
+{% for key, status in stati %}
+{% for categorie in categorien %}
+                    .tickets.status-{{ key }} .ticket.status-{{ key }}.categorie-0,
+                    .tickets.status-{{ key }}.categorie-{{ categorie.id }} .ticket.status-{{ key }}.categorie-{{ categorie.id }},
+{% endfor %}
+{% endfor %}
+                    .ticket-always-visible-dummy { display: block; }
+                        .ticket-h3 { display: flex; justify-content: space-between; font-size: 12px; color: #515151; }
+                        .ticket-img { display: block; max-width: 100%; height: auto; background: #ccc; background: #f7f9f8 url('/assets/img/pattern.svg'); background-size: 120px 120px;}
+                        .ticket-p { margin: 1em 0 .5em; font-weight: bold; }
+                        .ticket-ul { list-style: none; font-size: 12px; margin: 1em 0 0; }
+                            .ticket-li { border-radius: 6px; margin: 0 .5em 0 0; display: inline-block; padding: .3em .6em; color: #fff; background: rgba(55, 55, 55, .2); color: rgb(55, 55, 55); }
+                        .ticket-a { display: table; margin: 10px 0 0 auto; color: #fff; background: #00AF66; text-transform: right; text-align: right; text-transform: lowercase; text-decoration: none; font-size: 12px; padding: 3px 5px; text-align: center; }
+            .stats { list-style: none; display: flex; min-height: 100px; margin: -2px; overflow: auto; -webkit-overflow-scrolling: touch; }
+                .stats-li { display: flex; border: 2px solid #fff; flex: 0 1 auto; }
+                    .stats-a { display: flex; width: 100%; }
+                        .stats-dl { display: flex; width: 100%; max-width: 16px; flex-direction: column; }
+                            .stats-dt { overflow: hidden; height: 0; margin-top: auto; }
+                            .stats-dd { overflow: hidden; text-indent: 100%; }
+                            .stats-dd[title="Zakken"] { background: #22BBF0; }
+                            .stats-dd[title="Klein/Zwerf-vuil"] { background: #F04C4C; }
+                            .stats-dd[title="Grofvuil"] { background: #00AF66; }
+            .stats-legend { margin: 30px 0; list-style: none; line-height: 20px; font-size: 13px; text-transform: lowercase; }
+                .stats-legend-1::before, .stats-legend-2::before, .stats-legend-3::before { content: ''; display: inline-block; margin-right: 7px; border-radius: 50%; height: 10px; width: 10px; }
+                .stats-legend-1::before { background: #F04C4C; }
+                .stats-legend-2::before { background: #22BBF0; }
+                .stats-legend-3::before { background: #00AF66; }
+            .map { width: 100%; height: 600px; margin: 0 0 1em; }
+                .leaflet-popup-content-wrapper { width: 220px; border-radius: 0; }
+                .leaflet-popup-content p { margin: 1em 0 .5em; font-weight: bold; }
+                .marker { background: #333; border-radius: 50%; box-shadow: 0 0 3px rgba(0, 0, 0, .5); }
+                .marker-zakken { background: #22BBF0; }
+                .marker-grofvuil { background: #00AF66; }
+                .marker-kleinzwerfvuil { background: #F04C4C; }
+                .ticket-li-zakken { background: rgba(34, 187, 240, .2); color: rgb(34, 187, 240); }
+                .ticket-li-grofvuil { background: rgba(0, 175, 102, .2); color: rgb(0, 175, 102); }
+                .ticket-li-kleinzwerfvuil { background: rgba(240, 76, 76, .2); color: rgb(240, 76, 76); }
+            .daterangepicker { font-family: inherit; }
+            .drp-calendar.left::after { content: 'Let op: er kunnen maximaal 2 maanden geselecteerd worden'; display: block; padding-top: 5px; font-size: 12px; font-weight: bold; white-space: nowrap; }
+        </style>
+    </head>
     <body>
+        <div id="kaart"></div>
+        <div id="fotos"></div>
 
-        <header class="banner">
-            <div class="banner-wrapper">
-                <div class="banner-container">
-                    <a href="{{ path('gemeenteamsterdam_heelenschoon_dashboard_index') }}" class="banner-cleanstreet">
-                        <img src="/img/clean-street-logo.svg" alt="clean street">
-                    </a>
-                    <img src="/img/adam-logo.svg" class="banner-amsterdam" alt="gemeente amsterdam">
-                </div>
+        <header class="header">
+            <div class="container header-container">
+                <h1><img src="/img/clean-street-logo.svg" alt="clean street" width="250" height="52" class="header-img"></h1>
             </div>
         </header>
 
-        <nav class="main-nav" id="sticky-nav">
-            <div class="main-nav-wrapper">
-                <div class="main-nav-container">
-                    {% if filter.datumAangemaakt is defined %}
-                        <h1 class="dashboard-day">
-                        <a href="?datumAangemaakt={{ filter.datumAangemaakt|date_modify('-1 day')|date('Y-m-d') }}" class="dashboard-arrow prev">&#9668;</a>
-                        <span class="dashboard-datepicker" id="pikaday">{{ filter.datumAangemaakt|localizeddate('none', 'none', 'nl', false, 'EEEE d MMMM YYYY') }}</span>
-                        {% if filter.datumAangemaakt|date('Y-m-d') < 'now'|date('Y-m-d') %}
-                            <a href="?datumAangemaakt={{ filter.datumAangemaakt|date_modify('+1 day')|date('Y-m-d') }}" class="dashboard-arrow">&#9658;</a>
-                        {% endif %}
-                        </h1>
-                    {% endif %}
+        <form method="GET" class="filters">
+            <div class="filters-header">
+                <div class="container filters-container">
+                    <div class="filters-header-div">
+                        <label class="filters-header-label-date">
+                            <svg class="filters-header-svg" viewBox="0 0 32 32">
+                                <path d="M10 12h4v4h-4zM16 12h4v4h-4zM22 12h4v4h-4zM4 24h4v4h-4zM10 24h4v4h-4zM16 24h4v4h-4zM10 18h4v4h-4zM16 18h4v4h-4zM22 18h4v4h-4zM4 18h4v4h-4zM26 0v2h-4v-2h-14v2h-4v-2h-4v32h30v-32h-4zM28 30h-26v-22h26v22z"></path>
+                            </svg>
+                            <span>Start datum</span>
+                            <input type="text" name="startDatum" class="filters-header-date" id="startDatum" size="10" placeholder="yyyy-mm-dd" value="{{ startdatum|date('Y-m-d') }}" autocomplete="off">
+                        </label>
+                        <label>
+                            -
+                            <span>Eind datum</span>
+                            <input type="text" name="eindDatum" class="filters-header-date" id="eindDatum" size="10" placeholder="yyyy-mm-dd" value="{{ einddatum|date('Y-m-d') }}" autocomplete="off">
+                        </label>
+                    </div>
+                    <label class="filters-header-label">
+                        <span>Gebied</span>
+                        <select id="gebied" name="gebiedId" class="filters-header-select">
+                        {% for i in gebieden %}
+                            <option value="{{ i.id }}" {{ gebied.id == i.id ? 'selected' }}>{{ i.naam }}</option>
+                        {% endfor %}
+                        </select>
+                    </label>
+                    <label class="filters-header-label">
+                        <span>Adres</span>
+                        <input id="adres" type="text" name="adres" class="filters-header-input" placeholder="straat (nummer)" value="{{ app.request.query.get('adres') }}">
+                    </label>
+                    {% for key, gebied in straten %}
+                        <datalist id="straten-{{ key }}">
+                        {% for straat in gebied %}
+                            <option>{{ straat }}</option>
+                        {% endfor %}
+                        </datalist>
+                    {% endfor %}
+                    <button type="submit" class="filters-header-button">Zoek</button>
+                    <a href="{{ path('gemeenteamsterdam_heelenschoon_dashboard_excel', app.request.query.all) }}" class="filters-header-button">Export</a>
                 </div>
             </div>
-        </nav>
-
-        <section class="dashboard">
-            <div class="dashboard-wrapper">
-                <nav class="dashboard-filters">
-                    <div class="dashboard-filters-container group">
-                        <a href="#" id="filter-alles" class="dashboard-filter active">alles <span class="dashboard-filter-count">({{ tickets|length }})</span></a>
-                        <a href="#" id="filter-open" class="dashboard-filter">open <span class="dashboard-filter-count">(0)</span></a>
-                        <a href="#" id="filter-gesloten" class="dashboard-filter">gesloten <span class="dashboard-filter-count">(0)</span></a>
-                        <a href="#" id="filter-opgelost" class="dashboard-filter">opgelost <span class="dashboard-filter-count">(0)</span></a>
-                        <a href="#" id="filter-niet-opgelost" class="dashboard-filter">niet opgelost <span class="dashboard-filter-count">(0)</span></a>
-                        <a href="#" id="filter-onbekend" class="dashboard-filter">onbekend <span class="dashboard-filter-count">(0)</span></a>
-                        <a href="#" id="filter-geleegd" class="dashboard-filter">geleegd <span class="dashboard-filter-count">(0)</span></a>
-                    </div>
-                </nav>
-            </div>
-            <div class="dashboard-wrapper">
-
-                {% if tickets is empty %}
-                    <div class="no-tickets">
-                        <div class="no-tickets-container">
-                            <h1 class="no-tickets-title">geen tickets deze dag</h1>
-                            <p class="no-tickets-text">probeer een andere datum</p>
+            <div class="container">
+                <div class="filters-sidebar">
+                    <h2 class="filters-sidebar-h2">{{ records|length }} ticket{{ records|length != 1 ? 's' }}</h2>
+                    <fieldset class="filters-sidebar-fieldset filter-status">
+                        <legend class="filters-sidebar-legend">Status</legend>
+                        <div class="filters-sidebar-div">
+                            {% for key, status in stati %}
+                            <label class="filters-sidebar-label"><input type="checkbox" name="status[]" value="{{ key }}" class="filters-sidebar-input" data-class="status-{{ key|replace({' ': '-'}) }}" {{ key in app.request.query.get('status')|default({}) ? 'checked' }}> {{ status }} <em class="filters-sidebar-em">{{ counters.oplossing[key] }}</em></label>
+                            {% endfor %}
                         </div>
-                    </div>
-                {% endif %}
+                    </fieldset>
+                    <fieldset class="filters-sidebar-fieldset filter-categories">
+                        <legend class="filters-sidebar-legend">Categorie</legend>
+                        <div class="filters-sidebar-div">
+                        {% set hoofdcategorie = '' %}
+                        {% for categorie in categorien %}
+                        {% if categorie.hoofdcategorie != hoofdcategorie and categorie.hoofdcategorie != 'Klein/Zwerf-vuil' %}
+                            <label class="filters-sidebar-label"><input type="checkbox" class="filters-sidebar-input" data-hoofdcategorie="{{ categorie.hoofdcategorie }}"> {{ categorie.hoofdcategorie }} <em class="filters-sidebar-em">{{ counters.hoofdcategorie[categorie.hoofdcategorie]|default('0') }}</em></label>
+                        {% endif %}
+                        {% set hoofdcategorie = categorie.hoofdcategorie %}
+                            <label class="filters-sidebar-label{% if categorie.hoofdcategorie != 'Klein/Zwerf-vuil' %} filters-sidebar-label-indented{% endif %}"><input type="checkbox" name="categorie[]" value="{{ categorie.id }}" class="filters-sidebar-input" data-for="{{ hoofdcategorie }}" data-class="categorie-{{ categorie.id }}" {{ categorie.id in app.request.query.get('categorie')|default({}) ? 'checked' }}> {{ categorie.subcategorie }} <em class="filters-sidebar-em">{{ counters.categorie[categorie.id] }}</em></label>
+                        {% endfor %}
+                        </div>
+                    </fieldset>
 
-                {% for ticket in tickets %}
+                    {% if stats|length > 0 %}
+                    <ul class="stats">
+                        {% for date, stat in stats %}
+                            <li class="stats-li">
+                                <a href="#" class="stats-a">
+                                    <dl class="stats-dl">
+                                        <dt class="stats-dt">{{ date }}</dt>
+                                        {% for stk, sta in stat %}
+                                        <dd class="stats-dd" title="{{ stk }}" style="height:{{ sta * 2 }}px">{{ sta }}</dd>
+                                        {% endfor %}
+                                    </dl>
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    <ul class="stats-legend">
+                        <li class="stats-legend-1">Klein- en zwerfafval</li>
+                        <li class="stats-legend-2">Zakken</li>
+                        <li class="stats-legend-3">Grofvuil</li>
+                    </ul>
+                    {% endif %}
+                </div>
 
-                    {% set status %}{% if ticket.status is defined and ticket.status %}gesloten{% else %}open{% endif %}{% endset %}
-                    {% set oplossing %}{% if ticket.oplossing is defined %}{{ ticket.oplossing|replace({' ': '-'}) }}{% else %}{% endif %}{% endset %}
-                    {% set cardtype %}{% if ticket.fotos[0] is defined and ticket.fotos[0] is not empty %}photo{% else %}text-only{% endif %}{% endset %}
-                    {% set cardmessage %}{% include 'HeelEnSchoonBundle:Dashboard:_cardmessage.html.twig' %}{% endset %}
-
-                    <a href="{{ path('gemeenteamsterdam_heelenschoon_tickets_detail', {'ticketId': ticket.id, 'gebiedId': ticket.gebied.id, 'return': 'dashboard', 'datum': filter.datumAangemaakt|date('Y-m-d')}) }}" class="dashboard-item" data-status="{{ status }}" data-solution="{{ oplossing }}">
-                        <div class="dashboard-card{% if cardtype =='text-only' %} text-only{% endif %}{% if ticket.oplossing == 'geleegd' %} bak-geleegd{% endif %}" style="position: relative;{% if ticket.oplossing == 'geleegd' %}background-image:url(/assets/img/pattern-single.svg){% endif %}">
-                            {% if cardtype == 'text-only' %}
-                                <div class="dashboard-cardmessage">
-                                    {{ cardmessage }}
-                                </div>
-                            {% endif %}
-                            <span class="dashboard-time">{{ ticket.datumTijdAangemaakt|date('H:i') }}</span>
-                            {% if cardtype == 'photo' %}
-                                <img src="{{ asset('/assets/img/foto-placeholder.png') }}" data-src="{{ vich_uploader_asset(ticket.fotos[0], 'imageFile')|imagine_filter('thumbnail480') }}" class="dashboard-photo">
+                <div class="tickets{% for key, status in stati if key in app.request.query.get('status')|default({}) %} status-{{ key}}{% endfor %}{% for categorie in categorien if categorie.id in app.request.query.get('categorie')|default({}) %} categorie-{{ categorie.id }}{% endfor %}" id="tickets">
+                    <ul class="tickets-tabs">
+                        <li class="tickets-tabs-li"><a href="#kaart" class="tickets-tabs-a">Kaart</a></li>
+                        <li class="tickets-tabs-li"><a href="#fotos" class="tickets-tabs-a">Foto's</a></li>
+                    </ul>
+                    <div id="map" class="map"></div>
+                    <div class="ticket-grid">
+                    {% for record in records %}
+                        <div class="ticket status-{{ record.oplossing }}{% set hoofdcategorie = '' %}{% for categorie in record.getCategorien|default({}) %}{% if loop.first %}{% set hoofdcategorie = categorie.hoofdcategorie %}{% endif %} categorie-{{ categorie.id }}{% endfor %}{% if record.getCategorien|default({})|length == 0 %} categorie-0{% endif %}"{% if record.geo %} data-point="{{ record.geo }}"{% endif %} data-categorie="{{ hoofdcategorie|replace({'/': '', '-': ''})|lower }}">
+                            <h3 class="ticket-h3"><span class="ticket-span">{{ record.datumTijdAangemaakt|localizeddate('none', 'none', 'nl', false, 'd MMM') }}</span> <span class="ticket-span">{{ record.datumTijdAangemaakt|localizeddate('none', 'none', 'nl', false, 'kk:mm') }}</span></h3>
+                            {% if record.type == 'notitie' %}
+                                <p class="ticket-p">{{ record.straat }} {{ record.huisnummer }}</p>
                             {% else %}
-                                <img src="{{ asset('/assets/img/foto-placeholder.png') }}" data-src="{{ asset('/assets/img/foto-placeholder.png') }}" class="dashboard-photo">
+                                <p class="ticket-p">Bak lediging: {{ record.ondernemersBak.kenmerk }}</p>
                             {% endif %}
-                            <p class="dashboard-card-meta">
-                                {% if ticket.onderneming %}
-                                    <b>{{ ticket.onderneming.naam }}</b> - {{ ticket.onderneming.straat }} {{ ticket.onderneming.huisnummer }}
-                                {% elseif ticket.fotos|default({})|length > 0 and ticket.straat %}
-                                    {{ ticket.straat }}
-                                {% elseif ticket.bron == 'leegnu-melding' %}
-                                    Leeg.nu verzoek
-                                {% elseif ticket.bron == 'cleanstreet-contact' %}
-                                    Contactformulier
-                                {% elseif ticket.tekst %}
-                                    {{ ticket.tekst }}
-                                {% else %}
-                                    geen omschrijving
-                                {% endif %}
-                            </p>
+                            {% if record.fotos|default({})|length > 0 %}
+                            {% for foto in record.fotos %}
+                            <img class="ticket-img" src="{{ vich_uploader_asset(foto, 'imageFile')|imagine_filter('thumbnail480') }}" alt="">
+                            {% endfor %}
+                            {% else %}
+                            <img src="{{ asset('/assets/img/foto-placeholder.png') }}" class="ticket-img" alt="">
+                            {% endif %}
+                            <ul class="ticket-ul">
+                                <li class="ticket-li">{{ record.oplossing }}</li>
+                                {% for categorie in record.getCategorien|default({}) %}
+                                    <li class="ticket-li ticket-li-{{ hoofdcategorie|replace({'/': '', '-': ''})|lower }}">{{ categorie }}</li>
+                                {% endfor %}
+                            </ul>
+                            <a href="{{ path('gemeenteamsterdam_heelenschoon_tickets_detail', {'gebiedId': record.gebied.id, 'ticketId': record.id}) }}" class="ticket-a">Details</a>
                         </div>
-                    </a>
-                {% endfor %}
+                    {% endfor %}
+                    </div>
+                </div>
 
             </div>
-        </section>
 
-        <footer class="main-footer">
-            <div class="wrapper">
-                <p>Clean street is een initiatief van de Gemeente Amsterdam</p>
-            </div>
-        </footer>
+        </form>
 
-        <script src="/assets/js/jquery.sticky.js"></script>
-        <script src="/assets/js/jail.min.js"></script>
-        <script src="/assets/js/moment.min.js"></script>
-        <script src="/assets/js/pikaday/pikaday.js"></script>
-
+        <script src="/assets/js/jquery/3.2.1/jquery.min.js"></script>
+        <script src="/assets/js/moment/2.18.1/moment.min.js"></script>
+        <script src="/assets/js/daterangepicker/3.0.3/daterangepicker.min.js"></script>
+        <script src="/assets/js/leaflet.js"></script>
         <script>
-        $( document ).ready(function() {
+        (function() {
+            if (!'querySelectorAll' in document || !'addEventListener' in window || !'classList' in document.body) { return; }
 
-            // Lazy load photos
-            $('.dashboard-photo').jail({effect: 'fadeIn', speed: 200});
-
-            // Sticky nav
-            $("#sticky-nav").sticky({zIndex:2, responsiveWidth:false});
-
-            // Counts per filter
-            $("#filter-open .dashboard-filter-count").html("(" + $(".dashboard-item[data-status=open]").length + ")");
-            $("#filter-gesloten .dashboard-filter-count").html("(" + $(".dashboard-item[data-status=gesloten]").length + ")");
-            $("#filter-opgelost .dashboard-filter-count").html("(" + $(".dashboard-item[data-solution=opgelost]").length + ")");
-            $("#filter-niet-opgelost .dashboard-filter-count").html("(" + $(".dashboard-item[data-solution='niet-opgelost']").length + ")");
-            $("#filter-onbekend .dashboard-filter-count").html("(" + $(".dashboard-item[data-solution=onbekend]").length + ")");
-            $("#filter-geleegd .dashboard-filter-count").html("(" + $(".dashboard-item[data-solution=geleegd]").length + ")");
-
-            // Click filter
-            $(".dashboard-filter").click(function(e) {
-                e.preventDefault();
-                var filter = $(this).attr("id").substr("filter-".length);
-                localStorage.setItem("filter", filter);
-                $(".dashboard-filter").removeClass("active");
-                $(this).addClass("active");
-                $(".dashboard-item").fadeOut(200);
-                setTimeout(function () {
-                    switch (filter) {
-                        case "open":
-                        case "gesloten":
-                            $(".dashboard-item[data-status=" + filter + "]").fadeIn(200);
-                            break;
-                        case "opgelost":
-                        case "niet-opgelost":
-                        case "onbekend":
-                        case "geleegd":
-                            $(".dashboard-item[data-solution=" + filter + "]").fadeIn(200);
-                            break;
-                        case "alles":
-                        default:
-                            $(".dashboard-item").fadeIn(200);
-                    }
-                }, 200);
-            });
-
-            var filter = localStorage.getItem("filter") || "alles";
-            $("#filter-" + filter).click();
-
-            // Pikaday date picker
-            var headerdate = new Pikaday({
-                field: document.getElementById('pikaday'),
-                format: 'YYYY-MM-DD',
-                theme: 'cleanstreet-theme',
-                onSelect: function(date) {
-                    window.location = '?datumAangemaakt=' + headerdate.toString();
+            var tickets = document.getElementById('tickets');
+            var i;
+            var forEach = function(array, callback, scope) {
+                for (var i = 0; i < array.length; i++) {
+                    callback.call(scope, i, array[i]);
                 }
+            };
+
+            var filters = document.querySelectorAll('input[data-class]');
+            var run = function() {
+                forEach(filters, function(index, filter) {
+                    var cls = filter.getAttribute('data-class').split(' ');
+                    if (filter.checked) {
+                        tickets.classList.add(cls);
+                    } else {
+                        tickets.classList.remove(cls);
+                    }
+                });
+            };
+            forEach(filters, function(index, filter) {
+                filter.addEventListener('click', function() {
+                    run();
+                });
+            });
+            run();
+
+            var map = L.map(document.getElementById('map'), {
+                center: [52.373290, 4.893465],
+                zoom: 16,
+                attributionControl: false,
+                zoomControl: true,
+                dragging: true,
+                doubleClickZoom: true,
+                layers: [
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        minZoom: 14,
+                        maxZoom: 19
+                    })
+                ]
             });
 
-        });
+            var point, center, bounds = [];
+            forEach(document.querySelectorAll('.ticket[data-point]'), function(index, ticket) {
+                point = ticket.getAttribute('data-point').substring(16);
+                center = point.substring(0, point.length -1).split(' ');
+                bounds.push(center);
+                L.marker([center[0], center[1]], { icon: L.divIcon({className: 'marker marker-' + ticket.getAttribute('data-categorie') + ' marker-ticket ' + ticket.className, popupAnchor: [0, -22]})}).addTo(map).bindPopup(ticket.innerHTML);
+            });
+            if (bounds.length) {
+                map.fitBounds(bounds);
+            }
+
+            var options = {
+                ranges: {
+                    'Vandaag': [moment(), moment()],
+                    'Gisteren': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    'Laatste 7 dagen': [moment().subtract(6, 'days'), moment()],
+                    'Laatste 30 dagen': [moment().subtract(29, 'days'), moment()],
+                    'Deze maand': [moment().startOf('month'), moment().endOf('month')],
+                    'Afgelopen maand': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+                },
+                locale: {
+                    format: 'YYYY-MM-DD',
+                    separator: ' - ',
+                    applyLabel: 'Toepassen',
+                    cancelLabel: 'Annuleren',
+                    fromLabel: 'Vanaf',
+                    toLabel: 'Tot',
+                    customRangeLabel: 'Aangepast',
+                    weekLabel: 'W',
+                    daysOfWeek: [
+                        'Zo',
+                        'Ma',
+                        'Di',
+                        'Wo',
+                        'Do',
+                        'Vr',
+                        'Za'
+                    ],
+                    monthNames: [
+                        'Januari',
+                        'Februari',
+                        'Maart',
+                        'April',
+                        'Mei',
+                        'Juni',
+                        'Juli',
+                        'Augustus',
+                        'September',
+                        'Oktober',
+                        'November',
+                        'December'
+                    ],
+                    firstDay: 1
+                },
+                maxSpan: {
+                    months: 2
+                },
+                autoApply: true,
+                autoUpdateInput: false,
+                startDate: $('#startDatum').val(),
+                endDate: $('#eindDatum').val()
+            };
+
+            $('#startDatum').daterangepicker(options, function(start, end, label) {
+              $('#startDatum').val(start.format('YYYY-MM-DD'));
+              $('#eindDatum').val(end.format('YYYY-MM-DD'));
+              this.element[0].form.submit();
+            });
+            // $('#eindDatum').daterangepicker(options, function(start, end, label) {
+            //   $('#startDatum').val(start.format('YYYY-MM-DD'));
+            //   $('#eindDatum').val(end.format('YYYY-MM-DD'));
+            //   this.element[0].form.submit();
+            // });
+            document.getElementById('eindDatum').readOnly = true;
+
+            var adres = document.getElementById('adres');
+            if ('list' in adres) {
+                var gebied = document.getElementById('gebied');
+                gebied.addEventListener('change', function() {
+                    adres.setAttribute('list', 'straten-' + this.options[this.selectedIndex].value);
+                });
+                adres.setAttribute('list', 'straten-' + gebied.options[gebied.selectedIndex].value);
+            }
+
+            var categoryFilters = document.querySelectorAll('input[data-hoofdcategorie]');
+            var fixFilters = function() {
+                forEach(categoryFilters, function(index, filter) {
+                    var cat = filter.getAttribute('data-hoofdcategorie');
+                    var cats = document.querySelectorAll('[data-for="' + cat + '"]');
+                    var allChecked = true;
+                    forEach(cats, function(index, cat) {
+                        if (!cat.checked) {
+                            allChecked = false;
+                        }
+                    });
+                    if (allChecked) {
+                        filter.checked = true;
+                    } else {
+                        filter.checked = false;
+                    }
+                });
+            };
+            fixFilters();
+            forEach(categoryFilters, function(index, filter) {
+                var cat = filter.getAttribute('data-hoofdcategorie');
+                var cats = document.querySelectorAll('[data-for="' + cat + '"]');
+                forEach(cats, function(index, cat) {
+                    cat.addEventListener('click', function() {
+                        fixFilters();
+                    });
+                });
+                filter.addEventListener('click', function() {
+                    var cat = this.getAttribute('data-hoofdcategorie');
+                    var cats = document.querySelectorAll('[data-for="' + cat + '"]');
+                    var checked = this.checked;
+                    forEach(cats, function(index, cat) {
+                        cat.checked = checked;
+                    });
+                    run();
+                });
+            });
+        })();
         </script>
-{% endblock %}
+
+    </body>
+</html>

@@ -1,5 +1,0 @@
-{% if ticket.oplossing == 'geleegd' %}Bak {% if ticket.ondernemersBak.kenmerk is defined %}<b>{{ ticket.ondernemersBak.kenmerk }}</b>{% endif %} geleegd.
-{% elseif ticket.bron == 'leegnu-melding' %}Melding van volle bak via leeg.nu.
-{% elseif ticket.bron == 'cleanstreet-contact' %}Contactformulier aanvraag via website.
-{% elseif ticket.tekst is defined %}{{ ticket.tekst }}
-{% endif %}

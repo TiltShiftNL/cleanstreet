@@ -22,6 +22,18 @@ services:
         arguments:
             - '@doctrine.orm.default_entity_manager'
             
+    heel_en_schoon.form.type.medewerker:
+        class: 'GemeenteAmsterdam\HeelEnSchoonBundle\Form\Type\MedewerkerFormType'
+        arguments:
+            - '@security.password_encoder'
+        tags:
+            - { name: form.type }
+    heel_en_schoon.form.type.notitie:
+        class: 'GemeenteAmsterdam\HeelEnSchoonBundle\Form\Type\NotitieFormType'
+        arguments:
+            - '@doctrine.orm.entity_manager'
+        tags:
+            - { name: form.type }
     heel_en_schoon.form.type.ledigingsverzoek:
         class: 'GemeenteAmsterdam\HeelEnSchoonBundle\Form\Type\LedigingsVerzoekFormType'
         arguments:

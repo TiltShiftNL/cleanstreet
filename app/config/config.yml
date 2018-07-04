@@ -23,15 +23,16 @@ framework:
         engines: ['twig']
     default_locale: '%locale%'
     trusted_hosts: ~
-    trusted_proxies: ~
     session:
         # http://symfony.com/doc/current/reference/configuration/framework.html#handler-id
         handler_id:  session.handler.native_file
         save_path:   "%kernel.root_dir%/../var/sessions/%kernel.environment%"
+        cookie_lifetime: 32400 # 9h
+        cookie_secure: "%cookie_secure%"
     fragments: ~
     http_method_override: true
     assets:
-        version: '2'
+        version: '20180620'
         version_format: '%%s?v=%%s'
     php_errors:
         log: true
@@ -45,6 +46,7 @@ twig:
         - 'HeelEnSchoonBundle::forms.html.twig'
     globals:
         app_dienst_service: '@heel_en_schoon.service.dienst'
+        app_datapunt_baseurl: '%app_datapunt_baseurl%'
 
 # Doctrine Configuration
 doctrine:

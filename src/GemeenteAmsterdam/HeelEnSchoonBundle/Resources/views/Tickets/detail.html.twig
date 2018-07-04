@@ -12,6 +12,9 @@
             {% include 'HeelEnSchoonBundle:_icons:terug.svg.twig' with {'label': 'Alle tickets'} %}
         </a>
 {% endif %}
+{% if ticket.type == 'notitie' %}
+        <a href="#bewerken" class="edit" data-handler="focus-first-field">Wijzig</a>
+{% endif %}
     </header>
     <article class="ticket-detail" id="ticket-{{ ticket.id }}" data-id="{{ ticket.id }}">
 {% if ticket.fotos|default({})|length > 0 %}
@@ -44,7 +47,7 @@
         <h2>{{ ticket.onderneming.naam }}</h2>
         <p class="street">{{ ticket.onderneming.straat }} {{ ticket.onderneming.huisnummer }}</p>
 {% elseif ticket.straat %}
-        <p class="street">{{ ticket.straat }}</p>
+        <p class="street">{{ ticket.straat }} {{ ticket.huisnummer ? ticket.huisnummer }}</p>
 {% endif %}
 {% if ticket.type == 'notitie' %}
         <p class="text">{{ ticket.tekst|nl2br }}</p>
@@ -183,9 +186,86 @@
 {% endblock %}
 
 {% block views %}
+    <section class="section" id="section-bewerken">
+        {% if ticket.type == 'notitie' %}
+        {{ form_start(ticketForm) }}
+            <header class="section-header">
+                <h1>Ticket</h1>
+                <a href="#" class="back">
+                    {% include 'HeelEnSchoonBundle:_icons:annuleren.svg.twig' %}
+                </a>
+                <button type="submit">Bewaar</button>
+            </header>
+            <div class="field">
+                <label>Omschrijving
+                    {{ form_widget(ticketForm.tekst) }}
+                </label>
+            </div>
+            <div class="field">
+                <label>Onderneming
+                    {{ form_widget(ticketForm.onderneming) }}
+                </label>
+            </div>
+            <div class="field">
+                <label>Straat
+                    {{ form_widget(ticketForm.straat) }}
+                </label>
+            </div>
+            <div class="field">
+                <label>Huisnummer
+                    {{ form_widget(ticketForm.huisnummer) }}
+                </label>
+            </div>
+            <div class="field">
+                <fieldset>
+                    <legend>Hoofdcategorie</legend>
+                    <label>
+                        {{ form_widget(ticketForm.hoofdcategorie.0, {attr: {'data-handler': 'toggle-visibility', 'data-hide': 'subcategorie-zakken subcategorie-grofvuil'}}) }}
+                        {{ ticketForm.hoofdcategorie.0.vars.label }}
+                    </label>
+                    <label>
+                        {{ form_widget(ticketForm.hoofdcategorie.1, {attr: {'data-handler': 'toggle-visibility', 'data-hide': 'subcategorie-grofvuil', 'data-show': 'subcategorie-zakken'}}) }}
+                        {{ ticketForm.hoofdcategorie.1.vars.label }}
+                    </label>
+                    <label>
+                        {{ form_widget(ticketForm.hoofdcategorie.2, {attr: {'data-handler': 'toggle-visibility', 'data-hide': 'subcategorie-zakken', 'data-show': 'subcategorie-grofvuil'}}) }}
+                        {{ ticketForm.hoofdcategorie.2.vars.label }}
+                    </label>
+                </fieldset>
+                {% do ticketForm.hoofdcategorie.setRendered %}
+            </div>
+            <div class="field{{ ticketForm.hoofdcategorie.vars.data != 'Zakken' ? ' is-hidden' }}" id="subcategorie-zakken">
+                <fieldset>
+                    <legend>Subcategorie zakken</legend>
+                    {% for child in ticketForm.subcategorieZakken if child.vars.name != 'placeholder' %}
+                    <label>
+                        {{ form_widget(child) }}
+                        {{ child.vars.label }}
+                    </label>
+                    {% endfor %}
+                    {% do ticketForm.subcategorieZakken.setRendered %}
+                </fieldset>
+            </div>
+            <div class="field{{ ticketForm.hoofdcategorie.vars.data != 'Grofvuil' ? ' is-hidden' }}" id="subcategorie-grofvuil">
+                <fieldset>
+                    <legend>Subcategorie grofvuil</legend>
+                    {% for child in ticketForm.subcategorieGrofvuil %}
+                    <label>
+                        {{ form_widget(child) }}
+                        {{ child.vars.label }}
+                    </label>
+                    {% endfor %}
+                    {% do ticketForm.subcategorieGrofvuil.setRendered %}
+                </fieldset>
+            </div>
+            {% do ticketForm.fotos.setRendered() %}
+        {{ form_end(ticketForm) }}
+        {% endif %}
+    </section>
+
     <section class="section" id="section-selecteer-dienst">
         <header class="section-header">
-            <h1>Dienst selecteren</h1>
+            <h1>Update ticket</h1>
             <a href="#" class="back">
                 {% include 'HeelEnSchoonBundle:_icons:annuleren.svg.twig' %}
             </a>
@@ -218,7 +298,7 @@
     <section class="section" id="section-omschrijving-toevoegen">
         {{ form_start(notitieActieForm) }}
             <header class="section-header">
-                <h1 class="small">Omschrijving toevoegen</h1>
+                <h1>Update ticket</h1>
                 <a href="#" class="back">
                     {% include 'HeelEnSchoonBundle:_icons:annuleren.svg.twig' %}
                 </a>
@@ -236,7 +316,7 @@
     <section class="section" id="section-foto-toevoegen">
         {{ form_start(fotoActieForm) }}
             <header class="section-header">
-                <h1>Foto toevoegen</h1>
+                <h1>Update ticket</h1>
                 <a href="#" class="back">
                     {% include 'HeelEnSchoonBundle:_icons:annuleren.svg.twig' %}
                 </a>
@@ -245,7 +325,7 @@
             <div class="field-special">
                 <label>
                     Foto toevoegen
-                    <input type="file" accept="image/*" name="{{ fotoActieForm.fotos[0].imageFile.vars.full_name }}[file]" multiple required>
+                    <input type="file" accept="image/*" name="{{ fotoActieForm.fotos[0].imageFile.vars.full_name }}[file]" multiple required data-decorator="file-picker">
                     {% do fotoActieForm.fotos.setRendered() %}
                 </label>
             </div>

@@ -26,6 +26,9 @@ use GemeenteAmsterdam\HeelEnSchoonBundle\Form\Type\FotoActieFormType;
 use GemeenteAmsterdam\HeelEnSchoonBundle\Form\Type\NotitieActieFormType;
 use GemeenteAmsterdam\HeelEnSchoonBundle\Entity\FotoActie;
 use GemeenteAmsterdam\HeelEnSchoonBundle\Entity\NotitieActie;
+use GemeenteAmsterdam\HeelEnSchoonBundle\Util\FormErrorsToArray;
+use Symfony\Component\HttpFoundation\Response;
+use Doctrine\ORM\Query;
 
 class TicketsController extends Controller
 {
@@ -74,6 +77,15 @@ class TicketsController extends Controller
         $qb->setParameter('gebied', $gebied);
         $ondernemingen = $qb->getQuery()->execute();
 
+        // ondernemingen sort by adres
+        $qb = $this->getDoctrine()->getManager()->getRepository(Onderneming::class)->createQueryBuilder('onderneming');
+        $qb->select('onderneming');
+        $qb->addOrderBy('onderneming.straat', 'ASC');
+        $qb->addOrderBy('onderneming.huisnummer', 'ASC');
+        $qb->andWhere('onderneming.gebied = :gebied');
+        $qb->setParameter('gebied', $gebied);
+        $ondernemingenByStraat = $qb->getQuery()->execute();
+
         // notitie toevoegen
         $notitie = new Notitie();
         $notitie->addFoto(new Foto());
@@ -101,9 +113,33 @@ class TicketsController extends Controller
             'telefoonBoekEntryForm' => $telefoonBoekEntryForm->createView(),
             'diensten' => $diensten,
             'ondernemingen' => $ondernemingen,
+            'ondernemingenByStraat' => $ondernemingenByStraat,
             'filter' => $request->query->getBoolean('filter', false),
             'datum' => $datum
         ]);
+    }
+
+    /**
+     * @Route("/tickets/{gebiedId}/preview")
+     * @ParamConverter("gebied", class="GemeenteAmsterdam\HeelEnSchoonBundle\Entity\Gebied", options={"id"="gebiedId"})
+     * @Security("is_granted('IS_AUTHENTICATED_REMEMBERED') && is_granted('ROLE_USER')")
+     */
+    public function previewAction(Request $request, Gebied $gebied)
+    {
+        /** @var $qb QueryBuilder */
+        $qb = $this->getDoctrine()->getRepository(Ticket::class)->createQueryBuilder('ticket');
+        $qb->select('COUNT(ticket.id) AS aantal');
+        $qb->andWhere('ticket.gebied = :gebied');
+        $qb->setParameter('gebied', $gebied);
+        if ($request->query->getInt('last') > 0) {
+            $qb->andWhere('ticket.id > :last');
+            $qb->setParameter('last', $request->query->getInt('last'));
+        } else {
+            $qb->andWhere('ticket.datumTijdAangemaakt > :datumTijdAangemaakt');
+            $qb->setParameter('datumTijdAangemaakt', ((new \DateTime())->setTime(0, 0, 0)));
+        }
+        $num = $qb->getQuery()->execute(null, Query::HYDRATE_SINGLE_SCALAR);
+        return new Response($num);
     }
 
     /**
@@ -112,7 +148,7 @@ class TicketsController extends Controller
      * @ParamConverter("ticket", class="GemeenteAmsterdam\HeelEnSchoonBundle\Entity\Ticket", options={"id"="ticketId"})
      * @Security("is_granted('IS_AUTHENTICATED_REMEMBERED') && is_granted('ROLE_USER')")
      */
-    public function detailAction(Request $request, $ticket, Gebied $gebied)
+    public function detailAction(Request $request, Ticket $ticket, Gebied $gebied)
     {
         $diensten = $this->getDoctrine()->getManager()->getRepository(TelefoonboekEntry::class)->findBy(['gebied' => $gebied], ['titel' => 'ASC']);
 
@@ -125,8 +161,25 @@ class TicketsController extends Controller
         $notitieActie = new NotitieActie();
         $notitieActieForm = $this->createForm(NotitieActieFormType::class, $notitieActie, ['action' => $this->generateUrl('gemeenteamsterdam_heelenschoon_acties_createnotitie', ['ticketId' => $ticket->getId(), 'gebiedId' => $ticket->getGebied()->getId()])]);
 
+        $formType = null;
+        if ($ticket instanceof Notitie) {
+            $formType = NotitieFormType::class;
+        } elseif ($ticket instanceof LedigingsVerzoek) {
+            $formType = LedigingsVerzoekFormType::class;
+        }
+        $ticketForm = null;
+        if ($formType !== null) {
+            $ticketForm = $this->createForm($formType, $ticket);
+            $ticketForm->handleRequest($request);
+            if ($ticketForm->isSubmitted() && $ticketForm->isValid()) {
+                $this->getDoctrine()->getManager()->flush();
+                return $this->redirectToRoute('gemeenteamsterdam_heelenschoon_tickets_detail', ['ticketId' => $ticket->getId(), 'gebiedId' => $gebied->getId()]);
+            }
+        }
+
         return $this->render('HeelEnSchoonBundle:Tickets:detail.html.twig', [
             'ticket' => $ticket,
+            'ticketForm' => ($ticketForm !== null ? $ticketForm->createView() : null),
             'ondernemingen' => $ondernemingen,
             'diensten' => $diensten,
             'fotoActieForm' => $fotoActieForm->createView(),
@@ -157,7 +210,7 @@ class TicketsController extends Controller
             return $this->redirectToRoute('gemeenteamsterdam_heelenschoon_tickets_index', ['gebiedId' => $gebied->getId()]);
         }
 
-        return new JsonResponse(['errors' => $form->getErrors(true, true)->__toString()], JsonResponse::HTTP_BAD_REQUEST);
+        return new JsonResponse(['errors' => FormErrorsToArray::convert($form->getErrors(false, true))], JsonResponse::HTTP_BAD_REQUEST);
     }
 
     /**
@@ -174,18 +227,6 @@ class TicketsController extends Controller
 
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
-            /** @var $ondernemersBak OndernemersBak */
-            $ondernemersBak = $form->get('ondernemersBak')->getData();
-
-            $ledigingsVerzoek->setBron(Ticket::BRON_HANDMATIG);
-            $ledigingsVerzoek->setGeo($ondernemersBak->getOnderneming()->getGeoPoint());
-            $ledigingsVerzoek->setHuisnummer($ondernemersBak->getOnderneming()->getHuisnummer());
-            $ledigingsVerzoek->setOndernemersBak($ondernemersBak);
-            $ledigingsVerzoek->setOnderneming($ondernemersBak->getOnderneming());
-            $ledigingsVerzoek->setStatus(true);
-            $ledigingsVerzoek->setStraat($ondernemersBak->getOnderneming()->getStraat());
-            $ledigingsVerzoek->setOplossing(Ticket::OPLOSSING_GELEEGD);
-
             $actie = new StatusActie();
             $actie->setMedewerker($this->getUser());
             $actie->setNieuweOplossing(Ticket::OPLOSSING_GELEEGD);
@@ -201,7 +242,7 @@ class TicketsController extends Controller
             return $this->redirectToRoute('gemeenteamsterdam_heelenschoon_tickets_index', ['gebiedId' => $gebied->getId()]);
         }
 
-        return new JsonResponse(['errors' => $form->getErrors(true, true)->__toString()], JsonResponse::HTTP_BAD_REQUEST);
+        return new JsonResponse(['errors' => FormErrorsToArray::convert($form->getErrors(false, true))], JsonResponse::HTTP_BAD_REQUEST);
     }
 
     /**

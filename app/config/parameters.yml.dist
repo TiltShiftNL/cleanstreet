@@ -21,3 +21,5 @@ parameters:
     #
     app_phone_enabled: true
     app_messagebird_key: g66p9QdTSFlw7qatSWktYXN0z
+    app_datapunt_baseurl: 'https://api.data.amsterdam.nl'
+    cookie_secure: false

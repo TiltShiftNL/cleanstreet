@@ -4,7 +4,6 @@
     <header class="header">
         <div class="gebied">
             <strong>{{ gebied.naam }}</strong>
-            <a href="{{ path('gemeenteamsterdam_heelenschoon_gebied_selector') }}">Naar ander gebied</a>
         </div>
         <div{% if app_dienst_service.getDienst(gebied.id) is not empty %} class="active"{% endif %}>
             <button type="button" class="user" data-handler="toggle-user-menu">
@@ -12,6 +11,10 @@
                 {% include 'HeelEnSchoonBundle:_icons:pijltje-omlaag.svg.twig' %}
             </button>
             <p class="user-menu">
+                <a href="{{ path('gemeenteamsterdam_heelenschoon_gebied_selector') }}">Naar ander gebied</a>
+                {% if is_granted('ROLE_ADMIN') %}
+                <a href="{{ path('gemeenteamsterdam_heelenschoon_medewerker_index', {'gebiedId': gebied.id}) }}">Medewerkers</a>
+                {% endif %}
                 <a href="{{ path('gemeenteamsterdam_heelenschoon_dashboard_index') }}">Naar foto-dashboard</a>
                 <a href="/logout">Uitloggen</a>
             </p>
@@ -27,7 +30,7 @@
         </div>
         <nav class="nav">
             <ul>
-                <li><a class="nav-tickets" href="{{ path('gemeenteamsterdam_heelenschoon_tickets_index', {'gebiedId': gebied.id}) }}">Tickets</a></li>
+                <li><a class="nav-tickets" href="{{ path('gemeenteamsterdam_heelenschoon_tickets_index', {'gebiedId': gebied.id}) }}" data-decorator="auto-refresh" data-url="/tickets/{gebiedId}/preview?last={last}" data-gebied="{{ gebied.id }}">Tickets</a></li>
                 <li><a class="nav-ondernemers" href="#ondernemers" data-handler="focus-first-field">Ondernemers</a></li>
                 <li><a class="nav-diensten" href="#diensten" data-handler="focus-first-field">Diensten</a></li>
             </ul>
@@ -60,10 +63,10 @@
 {% endif %}
 {% for ticket in tickets %}
 {% if ticket.type == 'notitie' %}
-    <article class="ticket type-notitie" id="ticket-{{ ticket.id }}">
+    <article class="ticket type-notitie" id="ticket-{{ ticket.id }}" data-id="{{ ticket.id }}"{% if loop.first %} data-decorator="store-id"{% endif %}>
     {% if ticket.fotos|length > 0 %}
         <div class="fotos">
-            <a href="{{ vich_uploader_asset(ticket.fotos[0], 'imageFile')|imagine_filter('thumbnail1000') }}" class="img">
+            <a href="{{ path('gemeenteamsterdam_heelenschoon_tickets_detail', {'gebiedId': ticket.gebied.id, 'ticketId': ticket.id, 'filter': filter}) }}" class="img">
                 <img src="{{ vich_uploader_asset(ticket.fotos[0], 'imageFile')|imagine_filter('thumbnail240') }}" alt="">
             </a>
         </div>
@@ -80,7 +83,7 @@
             <h2>{{ ticket.onderneming.naam }}</h2>
             <p class="street">{{ ticket.onderneming.straat }} {{ ticket.onderneming.huisnummer }}</p>
     {% elseif ticket.straat %}
-            <p class="street">{{ ticket.straat }}</p>
+            <p class="street">{{ ticket.straat }} {{ ticket.huisnummer ? ticket.huisnummer }}</p>
     {% endif %}
             <p class="text">{{ ticket.tekst|nl2br }}</p>
             <p class="last-status">
@@ -109,7 +112,7 @@
         </a>
     </article>
 {% elseif ticket.type == 'ledigingsverzoek' %}
-    <article class="ticket type-notitie" id="ticket-{{ ticket.id }}">
+    <article class="ticket type-notitie" id="ticket-{{ ticket.id }}" data-id="{{ ticket.id }}"{% if loop.first %} data-decorator="store-id"{% endif %}>
         <a href="{{ path('gemeenteamsterdam_heelenschoon_tickets_detail', {'ticketId': ticket.id, 'gebiedId': ticket.gebied.id, 'filter': filter}) }}">
             <p class="meta">
                 <span>{{ ticket.datumTijdAangemaakt|localizeddate('none', 'none', 'nl', false, 'EE d MMM') }}</span>
@@ -123,7 +126,7 @@
             <h2>{{ ticket.onderneming.naam }}</h2>
             <p class="street">{{ ticket.onderneming.straat }} {{ ticket.onderneming.huisnummer }}</p>
     {% elseif ticket.straat %}
-            <p class="street">{{ ticket.straat }}</p>
+            <p class="street">{{ ticket.straat }} {{ ticket.huisnummer ? ticket.huisnummer }}</p>
     {% endif %}
             <p class="last-status">
                 <span>
@@ -170,7 +173,7 @@
             <input type="date" value="{{ datum|date('Y-m-d') }}" min="2017-06-08" max="{{ 'now'|date('Y-m-d') }}" data-decorator="change-date" data-url="{{ path('gemeenteamsterdam_heelenschoon_tickets_index', {'gebiedId': gebied.id, 'filter': 0, 'datum': 'DATUM'}) }}">
         </label>
 {% if datum|date('Y-m-d') != 'now'|date('Y-m-d') %}
-        <a href="{{ path('gemeenteamsterdam_heelenschoon_tickets_index', {'filter': 0, 'datum': datum|date_modify('+1 day')|date('Y-m-d')}) }}" rel="next">
+        <a href="{{ path('gemeenteamsterdam_heelenschoon_tickets_index', {'gebiedId': gebied.id, 'filter': 0, 'datum': datum|date_modify('+1 day')|date('Y-m-d'), 'gebiedId': gebied.id}) }}" rel="next">
             {% include 'HeelEnSchoonBundle:_icons:vooruit.svg.twig' with {'label': 'Volgende dag'} %}
         </a>
 {% endif %}
@@ -190,7 +193,7 @@
                 </header>
                 <ul>
                     <li class="more-important">
-                        <a href="#ticket-aanmaken" data-handler="close-action-sheet reset-ticket focus-first-field">
+                        <a href="#ticket-start" data-handler="close-action-sheet reset-ticket">
                             {% include 'HeelEnSchoonBundle:_icons:nieuw-ticket.svg.twig' %}
                             Ticket aanmaken
                         </a>
@@ -209,10 +212,89 @@
 
 {% block views %}
 {% if notitieForm is defined %}
-    <section class="section" id="section-ticket-aanmaken">
-        {{ form_start(notitieForm) }}
+    {{ form_start(notitieForm, {'attr': {'class': 'ticket-form'}}) }}
+
+        <section class="section" id="section-ticket-start">
             <header class="section-header">
-                <h1 class="small">Ticket toevoegen</h1>
+                <h1>Nieuw ticket</h1>
+                <a href="#" class="back">
+                    {% include 'HeelEnSchoonBundle:_icons:annuleren.svg.twig' %}
+                </a>
+            </header>
+            
+            {% do notitieForm.hoofdcategorie.setRendered %}
+            <ul class="options">
+                <li>
+                    <label>
+                        {{ form_widget(notitieForm.hoofdcategorie.0, {attr: {'data-handler': 'click init-picker', 'data-href': 'ticket-aanmaken'}}) }}
+                        {{ notitieForm.hoofdcategorie.0.vars.label }}
+                    </label>
+                </li>
+                <li>
+                    <label>
+                        {{ form_widget(notitieForm.hoofdcategorie.1, {attr: {'data-handler': 'click init-picker', 'data-href': 'ticket-hoeveelheid'}}) }}
+                        {{ notitieForm.hoofdcategorie.1.vars.label }}
+                    </label>
+                </li>
+                <li>
+                    <label>
+                        {{ form_widget(notitieForm.hoofdcategorie.2, {attr: {'data-handler': 'click init-picker', 'data-href': 'ticket-type'}}) }}
+                        {{ notitieForm.hoofdcategorie.2.vars.label }}
+                    </label>
+                </li>
+            </ul>
+        </section>
+
+        <section class="section" id="section-ticket-hoeveelheid">
+            <header class="section-header">
+                <h1>Nieuw ticket</h1>
+                <a href="#" class="back">
+                    {% include 'HeelEnSchoonBundle:_icons:annuleren.svg.twig' %}
+                </a>
+            </header>
+            <ul class="options">
+            {% for child in notitieForm.subcategorieZakken if child.vars.name != 'placeholder' %}
+                <li>
+                    <label>
+                        {% if child.vars.attr.pictogramNaam is not empty %}
+                            {% include 'HeelEnSchoonBundle:_icons:' ~ child.vars.attr.pictogramNaam ~ '.twig' %}
+                        {% endif %}
+                        {{ form_widget(child, {attr: {'data-handler': 'click init-picker', 'data-href': 'ticket-aanmaken'}}) }}
+                        {{ child.vars.label }}
+                    </label>
+                </li>
+            {% endfor %}
+            </ul>
+            {% do notitieForm.subcategorieZakken.setRendered %}
+        </section>
+
+        <section class="section" id="section-ticket-type">
+            <header class="section-header">
+                <h1>Nieuw ticket</h1>
+                <a href="#" class="back">
+                    {% include 'HeelEnSchoonBundle:_icons:annuleren.svg.twig' %}
+                </a>
+                <a href="#ticket-aanmaken" class="submit" data-handler="init-picker">Verder</a>
+            </header>
+            <ul class="options grouped">
+            {% for child in notitieForm.subcategorieGrofvuil %}
+                <li>
+                    <label>
+                        {% if child.vars.attr.pictogramNaam is not empty %}
+                            {% include 'HeelEnSchoonBundle:_icons:' ~ child.vars.attr.pictogramNaam ~ '.twig' %}
+                        {% endif %}
+                        {{ form_widget(child, {attr: {'data-handler': 'toggle-state'}}) }}
+                        {{ child.vars.label }}
+                    </label>
+                </li>
+            {% endfor %}
+            </ul>
+            {% do notitieForm.subcategorieGrofvuil.setRendered %}
+        </section>
+
+        <section class="section" id="section-ticket-aanmaken">
+            <header class="section-header">
+                <h1>Nieuw ticket</h1>
                 <a href="#" class="back">
                     {% include 'HeelEnSchoonBundle:_icons:annuleren.svg.twig' %}
                 </a>
@@ -224,11 +306,11 @@
                     {{ form_widget(notitieForm.tekst, {'required': false}) }}
                 </label>
             </div>
-            <div class="field-special">
+            <div class="field-special" id="ticket-foto">
                 <label>
                     {% include 'HeelEnSchoonBundle:_icons:foto.svg.twig' %}
                     <span>Foto toevoegen</span>
-                    <input type="file" accept="image/*" name="{{ notitieForm.fotos[0].imageFile.vars.full_name }}[file]" multiple>
+                    <input type="file" accept="image/*" name="{{ notitieForm.fotos[0].imageFile.vars.full_name }}[file]" multiple data-decorator="file-picker">
                     {% do notitieForm.fotos.setRendered() %}
                 </label>
             </div>
@@ -239,15 +321,6 @@
                     {% include 'HeelEnSchoonBundle:_icons:ondernemer.svg.twig' %}
                     <span>Ondernemer toevoegen</span>
                 </a>
-            </div>
-            <div class="field-special">
-                {{ form_widget(notitieForm.straat) }}
-                {{ form_widget(notitieForm.huisnummer) }}
-                {{ form_widget(notitieForm.geo) }}
-                <span id="locatie">
-                    {% include 'HeelEnSchoonBundle:_icons:locatie.svg.twig' %}
-                    <span>Locatie</span>
-                </span>
             </div>
             <div class="map-container is-inactive" id="map-container">
                 <button class="location-change" type="button" data-handler="use-my-location">
@@ -262,11 +335,28 @@
                         Wijzig locatie
                     </span>
                 </button>
-                <div class="map" id="map" data-decorator="map" data-interactive></div>
+                <div class="map" id="map" data-decorator="map" data-interactive data-street="notitie_form_straat"></div>
                 <div class="map-shade"></div>
             </div>
-        {{ form_end(notitieForm) }}
-    </section>
+            <div class="field-special">
+                {{ form_widget(notitieForm.geo) }}
+                <span id="locatie">
+                    {% include 'HeelEnSchoonBundle:_icons:locatie.svg.twig' %}
+                    <span>Locatie</span>
+                </span>
+            </div>
+            <div class="field">
+                <label>Straat
+                    {{ form_widget(notitieForm.straat) }}
+                </label>
+            </div>
+            <div class="field">
+                <label>Huisnummer
+                    {{ form_widget(notitieForm.huisnummer) }}
+                </label>
+            </div>
+        </section>
+    {{ form_end(notitieForm) }}
 {% endif %}
 
 {% if ledigingsVerzoekForm is defined %}
@@ -282,7 +372,7 @@
             <p class="search"><input type="search" data-decorator="search-filter" placeholder="Zoek bak"></p>
             <div class="list">
                 <ul>
-{% for onderneming in ondernemingen if onderneming.ondernemersBakken|length > 0 and onderneming.verwijderd == false %}
+{% for onderneming in ondernemingenByStraat if onderneming.ondernemersBakken|length > 0 and onderneming.verwijderd == false %}
     {% set heeftBak = false %}
     {% for ondernemersBak in onderneming.ondernemersBakken if ondernemersBak.verwijderd == false %}
         {% set heeftBak = true %}
@@ -294,7 +384,7 @@
                             <p>{{ onderneming.straat }} {{ onderneming.huisnummer }}</p>
                             <p>
     {% for ondernemersBak in onderneming.ondernemersBakken if ondernemersBak.verwijderd == false %}
-                                <label><input type="radio" name="{{ ledigingsVerzoekForm.ondernemersBak.vars.full_name }}" value="{{ ondernemersBak.kenmerk }}" required><span class="bak">{{ ondernemersBak.kenmerk }}</span></label>
+                                <label><input type="radio" name="{{ ledigingsVerzoekForm.ondernemersBak.vars.full_name }}" value="{{ ondernemersBak.kenmerk }}" required class="bak-option"><span class="bak">{{ ondernemersBak.kenmerk }}</span></label>
     {% endfor %}
                             </p>
                         </div>
@@ -406,7 +496,7 @@
                 <li>
                     <a href="#ticket-aanmaken" data-handler="selecteer-ondernemer" data-id="{{ onderneming.id }}"{% if onderneming.geoPoint %} data-geo="{{ onderneming.geoPoint }}"{% endif %}>
                         <h3>{{ onderneming.naam }}</h3>
-                        <p>{{ onderneming.straat }} {{ onderneming.huisnummer }}</p>
+                        <p><span class="straat">{{ onderneming.straat }}</span> <span class="huisnummer">{{ onderneming.huisnummer }}</span></p>
                     </a>
                 </li>
 {% endfor %}

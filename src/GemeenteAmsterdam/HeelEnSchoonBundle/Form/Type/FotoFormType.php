@@ -17,7 +17,7 @@ class FotoFormType extends AbstractType
         $builder->add('imageFile', VichImageType::class, [
                         'required' => false,
                         'allow_delete' => false,
-                        'download_link' => true,
+                        'download_uri' => true,
                     ]);
         $builder->add('geoUpload', HiddenType::class);
 

@@ -5,17 +5,42 @@ var cs = {
         'selecteer-ondernemer': function() {
             var onderneming = document.getElementById('onderneming');
             var locatie = document.getElementById('locatie');
-            var street = this.querySelector('p').textContent;
+            var street = this.querySelector('.straat').textContent;
+            var house = this.querySelector('.huisnummer').textContent;
             onderneming.querySelector('span').innerHTML = this.querySelector('h3').textContent;
             onderneming.previousElementSibling.value = this.getAttribute('data-id');
             locatie.querySelector('span').innerHTML = street;
-            locatie.previousElementSibling.previousElementSibling.previousElementSibling.value = street;
+            document.getElementById('notitie_form_straat').value = street;
+            document.getElementById('notitie_form_huisnummer').value = house;
             if (this.hasAttribute('data-geo')) {
                 var point = this.getAttribute('data-geo').substring(16);
                 point = point.substring(0, point.length -1).split(' ');
                 if (cs.map) {
                     cs.mapAutoMove = true;
                     cs.map.panTo(point);
+                }
+            }
+        },
+        'click': function(ev) {
+            location.hash = this.getAttribute('data-href');
+        },
+        'toggle-state': function(ev) {
+            if (this.checked) {
+                this.parentNode.classList.add('active');
+            } else {
+                this.parentNode.classList.remove('active');
+            }
+        },
+        'toggle-visibility': function() {
+            var i, hide = this.getAttribute('data-hide') && this.getAttribute('data-hide').split(' '), show = this.getAttribute('data-show') && this.getAttribute('data-show').split(' ');
+            if (hide) {
+                for (i = 0; i < hide.length; i++) {
+                    document.getElementById(hide[i]).classList.add('is-hidden');
+                }
+            }
+            if (show) {
+                for (i = 0; i < show.length; i++) {
+                    document.getElementById(show[i]).classList.remove('is-hidden');
                 }
             }
         },
@@ -34,26 +59,30 @@ var cs = {
                     point = geo.value.substring(16);
                     center = point.substring(0, point.length -1).split(' ');
                 }
-                cs.map = L.map(container, {
-                    center: center,
-                    zoom: 16,
-                    attributionControl: false,
-                    layers: [
-                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                            minZoom: 14,
-                            maxZoom: 19
-                        })
-                    ]
-                });
-                cs.map.on('moveend', function() {
-                    var center = cs.map.getCenter();
-                    geo.value = 'POINT(' + center.lat + ' ' + center.lng + ')';
-                    if (streetInput && streetInput.value == '') {
-                        cs.utils.fetchStreet(center.lat, center.lng, function(street) {
-                            streetInput.value = street;
-                        });
-                    }
-                });
+                if (cs.locationPicker) {
+                    cs.locationPicker.invalidateSize();
+                } else {
+                    cs.locationPicker = L.map(container, {
+                        center: center,
+                        zoom: 16,
+                        attributionControl: false,
+                        layers: [
+                            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                                minZoom: 14,
+                                maxZoom: 19
+                            })
+                        ]
+                    });
+                    cs.locationPicker.on('moveend', function() {
+                        var center = cs.locationPicker.getCenter();
+                        geo.value = 'POINT(' + center.lat + ' ' + center.lng + ')';
+                        if (streetInput && streetInput.value == '') {
+                            cs.utils.fetchStreet(center.lat, center.lng, function(street) {
+                                streetInput.value = street;
+                            });
+                        }
+                    });
+                }
             }, 300);
         },
         'toggle-service': function(ev) {
@@ -118,17 +147,29 @@ var cs = {
         },
         'toggle-user-menu': function() {
             this.classList.toggle('is-active');
+            this.parentNode.parentNode.classList.toggle('is-active');
         },
         'reset-ticket': function(ev) {
-            var form = document.querySelector('#section-' + this.getAttribute('href').replace('#', '') + ' form');
+            var form = document.querySelector('#section-' + this.getAttribute('href').replace('#', '')).parentNode;
             form.reset();
             form.elements['notitie_form[onderneming]'].value = '';
             form.elements['notitie_form[straat]'].value = '';
             form.elements['notitie_form[huisnummer]'].value = '';
             form.elements['notitie_form[geo]'].value = '';
+            cs.utils.clearPreviews(document.getElementById('ticket-foto'));
             document.querySelector('#onderneming span').innerHTML = 'Ondernemer toevoegen';
             document.querySelector('#locatie span').innerHTML = 'Locatie';
             document.getElementById('map-container').classList.add('is-inactive');
+        },
+        'init-picker': function() {
+            var form;
+            if (this.getAttribute('href')) {
+                form = document.querySelector('#section-' + this.getAttribute('href').replace('#', '')).parentNode;
+            } else if (this.getAttribute('data-href')) {
+                form = document.querySelector('#section-' + this.getAttribute('data-href')).parentNode;
+            } else {
+                return;
+            }
             setTimeout(function() {
                 cs.run(form);
                 document.querySelector('[data-handler="use-my-location"]').click();
@@ -183,6 +224,12 @@ var cs = {
                 }
             });
         },
+        'store-id': function() {
+            var id = this.getAttribute('data-id');
+            if (window.localStorage && (!localStorage['last-id'] || (localStorage['last-id'] && parseInt(localStorage['last-id']) < id)) && location.hash == '') {
+                localStorage['last-id'] = id;
+            }
+        },
         'change-date': function() {
             var oldValue = this.value;
             this.addEventListener('blur', function() {
@@ -190,6 +237,28 @@ var cs = {
                     location.href = this.getAttribute('data-url').replace('DATUM', this.value);
                 }
             });
+        },
+        'file-picker': function() {
+            if (this._decorated) {
+                return;
+            }
+            if (this.files && window.URL) {
+                this.addEventListener('change', function() {
+                    cs.utils.clearPreviews(this.parentNode.parentNode);
+                    var i, file, container = this.parentNode.parentNode;
+                    for (i = 0; i < this.files.length; i++) {
+                        file = this.files[i];
+                        setTimeout(function() {
+                            var img = document.createElement('img');
+                            img.setAttribute('alt', '');
+                            img.className = 'preview';
+                            container.appendChild(img);
+                            img.src = window.URL.createObjectURL(file);
+                        }, i * 150);
+                    }
+                });
+            }
+            this._decorated = true;
         },
         'search-filter': function() {
             var items = this.parentNode.nextElementSibling.querySelectorAll('li');
@@ -204,11 +273,41 @@ var cs = {
                 });
             });
         },
+        'auto-refresh': function() {
+            if (!window.localStorage) {
+                return;
+            }
+            var link = this;
+            var url = link.getAttribute('data-url').replace('{gebiedId}', link.getAttribute('data-gebied'));
+            var counter = document.createElement('em');
+            var first = true;
+            var refresh = function() {
+                if (!localStorage['last-id']) {
+                    return;
+                }
+                cs.utils.xhr({
+                    url: url.replace('{last}', localStorage['last-id']),
+                    method: 'GET',
+                    success: function(req) {
+                        if (parseInt(req.responseText) !== 0) {
+                            if (first) {
+                                link.appendChild(counter);
+                                first = false;
+                            }
+                            counter.textContent = parseInt(req.responseText);
+                        }
+                        setTimeout(refresh, 30000);
+                    }
+                });
+            }
+            setTimeout(refresh, 30000);
+        },
         'map': function() {
             var container = this;
             var interactive = this.hasAttribute('data-interactive');
             var center = [52.373290, 4.893465];
             var point;
+            var streetInput = container.getAttribute('data-street') && document.getElementById(container.getAttribute('data-street'));
             if (this.hasAttribute('data-center')) {
                 point = this.getAttribute('data-center').substring(16);
                 center = point.substring(0, point.length -1).split(' ');
@@ -234,11 +333,17 @@ var cs = {
                     cs.map.on('moveend', function() {
                         var center = cs.map.getCenter();
                         var locatie = document.getElementById('locatie');
-                        locatie.previousElementSibling.value = 'POINT(' + center.lat + ' ' + center.lng + ')';
+                        if (locatie) {
+                            locatie.previousElementSibling.value = 'POINT(' + center.lat + ' ' + center.lng + ')';
+                        }
                         if (!cs.mapAutoMove) {
                             cs.utils.fetchStreet(center.lat, center.lng, function(street) {
-                                locatie.previousElementSibling.previousElementSibling.previousElementSibling.value = street;
-                                locatie.querySelector('span').innerHTML = street;
+                                if (streetInput) {
+                                    streetInput.value = street;
+                                }
+                                if (locatie) {
+                                    locatie.querySelector('span').innerHTML = street;
+                                }
                             });
                         } else {
                             setTimeout(function() {
@@ -253,7 +358,7 @@ var cs = {
     utils: {
         fetchStreet: function(lat, lon, callback) {
             cs.utils.xhr({
-                url: 'https://api.datapunt.amsterdam.nl/geosearch/search/?item=openbareruimte&lat=' + lat + '&lon=' + lon + '&radius=' + 10,
+                url: DATAPUNTAPI + '/geosearch/search/?item=openbareruimte&lat=' + lat + '&lon=' + lon + '&radius=' + 10,
                 timeout: 2000,
                 success: function(request) {
                     var response = JSON.parse(request.responseText);
@@ -315,6 +420,12 @@ var cs = {
             }
             request.send(params);
             return request;
+        },
+        clearPreviews: function(container) {
+            var i, images = container.querySelectorAll('img');
+            for (i = 0; i < images.length; i++) {
+                images[i].parentNode.removeChild(images[i]);
+            }
         },
         forEach: function(array, callback, scope) {
             for (var i = 0; i < array.length; i++) {

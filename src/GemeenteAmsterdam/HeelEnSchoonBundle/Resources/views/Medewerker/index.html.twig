@@ -1,0 +1,94 @@
+{% extends 'HeelEnSchoonBundle::concierge.html.twig' %}
+
+{% block header %}
+    <header class="header">
+        <div class="gebied">
+            <strong>{{ gebied.naam }}</strong>
+        </div>
+        <div{% if app_dienst_service.getDienst(gebied.id) is not empty %} class="active"{% endif %}>
+            <button type="button" class="user" data-handler="toggle-user-menu">
+                {{ app.user.naam }}
+                {% include 'HeelEnSchoonBundle:_icons:pijltje-omlaag.svg.twig' %}
+            </button>
+            <p class="user-menu">
+                <a href="{{ path('gemeenteamsterdam_heelenschoon_gebied_selector') }}">Naar ander gebied</a>
+                <a href="{{ path('gemeenteamsterdam_heelenschoon_dashboard_index') }}">Naar foto-dashboard</a>
+                <a href="/logout">Uitloggen</a>
+            </p>
+{% if app_dienst_service.getDienst(gebied.id) is not empty %}
+            <form method="post" action="{{ path('gemeenteamsterdam_heelenschoon_dienst_stop', {'gebiedId': gebied.id}) }}" class="service">
+                <button type="submit" data-handler="toggle-service" data-tickets-url="{{ path('gemeenteamsterdam_heelenschoon_tickets_index', {'gebiedId': gebied.id}) }}" data-confirm="Je gaat ‘Leeg.nu’ (volle bak melden) UITzetten voor {{ gebied.naam }}."></button>
+            </form>
+{% else %}
+            <form method="post" action="{{ path('gemeenteamsterdam_heelenschoon_dienst_start', {'gebiedId': gebied.id}) }}" class="service">
+                <button type="submit" data-handler="toggle-service" data-tickets-url="{{ path('gemeenteamsterdam_heelenschoon_tickets_index', {'gebiedId': gebied.id}) }}" data-confirm="Je gaat ‘Leeg.nu’ (volle bak melden) AANzetten voor {{ gebied.naam }}."></button>
+            </form>
+{% endif %}
+        </div>
+        <nav class="nav">
+            <ul>
+                <li><a class="nav-tickets" href="{{ path('gemeenteamsterdam_heelenschoon_tickets_index', {'gebiedId': gebied.id, '_fragment': 'tickets'}) }}" data-decorator="auto-refresh" data-url="/tickets/{gebiedId}/preview?last={last}" data-gebied="{{ gebied.id }}">Tickets</a></li>
+                <li><a class="nav-ondernemers" href="{{ path('gemeenteamsterdam_heelenschoon_tickets_index', {'gebiedId': gebied.id, '_fragment': 'ondernemers'}) }}" data-handler="focus-first-field">Ondernemers</a></li>
+                <li><a class="nav-diensten" href="{{ path('gemeenteamsterdam_heelenschoon_tickets_index', {'gebiedId': gebied.id, '_fragment': 'diensten'}) }}" data-handler="focus-first-field">Diensten</a></li>
+            </ul>
+        </nav>
+    </header>
+{% endblock %}
+
+{% block main %}
+    <form class="search" method="get" action="#medewerkers">
+        <input type="search" data-decorator="search-filter" placeholder="Zoek medewerker">
+    </form>
+    <div class="list">
+        <ul>
+{% for medewerker in medewerkers %}
+            <li>
+                <a href="{{ path('gemeenteamsterdam_heelenschoon_medewerker_detail', {'gebiedId': gebied.id, 'id': medewerker.id}) }}">
+                    <h3>{{ medewerker.naam }}</h3>
+                    {% if medewerker.admin %}<p>beheerder</p>{% endif %}
+                    {% if medewerker.isEnabled == false %}<p>account geblokkeerd</p>{% endif %}
+                </a>
+            </li>
+{% endfor %}
+        </ul>
+    </div>
+    <footer class="section-footer">
+        <a href="#medewerker-aanmaken" data-handler="focus-first-field">
+            {% include 'HeelEnSchoonBundle:_icons:toevoegen.svg.twig' %}
+        </a>
+    </footer>
+{% endblock %}
+
+{% block views %}
+    <section class="section" id="section-medewerker-aanmaken">
+        {{ form_start(medewerkerForm, {'attr': {'class': 'ticket-form'}}) }}
+            <header class="section-header">
+                <h1 class="small">Nieuwe medewerker</h1>
+                <a href="#" class="back">
+                    {% include 'HeelEnSchoonBundle:_icons:annuleren.svg.twig' %}
+                </a>
+                <button type="submit">Aanmaken</button>
+            </header>
+            <div class="field">
+                <label>Naam
+                    {{ form_widget(medewerkerForm.naam) }}
+                </label>
+            </div>
+            <div class="field">
+                <label>Account actief
+                    {{ form_widget(medewerkerForm.actief) }}
+                </label>
+            </div>
+            <div class="field">
+                <label>Beheerder
+                    {{ form_widget(medewerkerForm.admin) }}
+                </label>
+            </div>
+            <div class="field">
+                <label>Wachtwoord
+                    {{ form_widget(medewerkerForm.plainPassword) }}
+                </label>
+            </div>
+        {{ form_end(medewerkerForm) }}
+    </section>
+{% endblock %}

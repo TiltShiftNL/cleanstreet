@@ -1,0 +1,51 @@
+{% extends 'HeelEnSchoonBundle::concierge.html.twig' %}
+
+{% block main %}
+    <header class="section-header">
+        <h1>{{ medewerker.naam }}</h1>
+        <a href="{{ path('gemeenteamsterdam_heelenschoon_medewerker_index', {'gebiedId': gebied.id}) }}" class="back">
+            {% include 'HeelEnSchoonBundle:_icons:annuleren.svg.twig' %}
+        </a>
+        <a href="#bewerken" class="edit" data-handler="focus-first-field start-location-picker">Wijzig</a>
+    </header>
+    <article class="ticket-detail">
+        <p>Naam: <strong>{{ medewerker.naam }}</strong></p>
+        <p>Status van het account: <strong>{{ medewerker.actief ? 'actief, kan inloggen' : 'geblokkeerd' }}</strong>
+        <p>Rechten: <strong>{{ medewerker.admin ? 'beheerder' : 'normale gebruiker' }}</strong>
+    </article>
+{% endblock %}
+
+{% block views %}
+    <section class="section" id="section-bewerken">
+        {{ form_start(form) }}
+            <header class="section-header">
+                <h1>Medewerker</h1>
+                <a href="#" class="back">
+                    {% include 'HeelEnSchoonBundle:_icons:annuleren.svg.twig' %}
+                </a>
+                <button type="submit">Bewaar</button>
+            </header>
+            <div class="field">
+                <label>Naam
+                    {{ form_widget(form.naam) }}
+                </label>
+            </div>
+            <div class="field">
+                <label>Account actief
+                    {{ form_widget(form.actief) }}
+                </label>
+            </div>
+            <div class="field">
+                <label>Beheerder
+                    {{ form_widget(form.admin) }}
+                </label>
+            </div>
+            <div class="field">
+                <label>Wachtwoord
+                    {{ form_widget(form.plainPassword) }}
+                </label>
+            </div>
+        {{ form_end(form) }}
+    </section>
+
+{% endblock %}

@@ -29,10 +29,22 @@ class Notitie extends Ticket
      */
     private $fotos;
 
+    /**
+     * @var Categorie[]|ArrayCollection
+     * @ORM\ManyToMany(targetEntity="Categorie")
+     * @ORM\JoinTable(
+     *  name="ticket_categorie",
+     *  joinColumns={@ORM\JoinColumn(name="ticket_id", referencedColumnName="id")},
+     *  inverseJoinColumns={@ORM\JoinColumn(name="categorie_id", referencedColumnName="id")}
+     * )
+     */
+    private $categorien;
+
     public function __construct()
     {
         parent::__construct();
         $this->fotos = new ArrayCollection();
+        $this->categorien = new ArrayCollection();
     }
 
     public function getType()
@@ -96,5 +108,47 @@ class Notitie extends Ticket
     public function getFotos()
     {
         return $this->fotos;
+    }
+
+    /**
+     * @return \GemeenteAmsterdam\HeelEnSchoonBundle\Entity\Categorie[]|\Doctrine\Common\Collections\ArrayCollection
+     */
+    public function getCategorien()
+    {
+        return $this->categorien;
+    }
+
+    public function clearCategorien()
+    {
+        $this->categorien->clear();
+    }
+
+    /**
+     * @param Categorie $categorie
+     */
+    public function addCategorie(Categorie $categorie)
+    {
+        if ($this->hasCategorie($categorie) === false) {
+            $this->categorien->add($categorie);
+        }
+    }
+
+    /**
+     * @param Categorie $categorie
+     */
+    public function removeCategorie(Categorie $categorie)
+    {
+        if ($this->hasCategorie($categorie) === true) {
+            $this->categorien->removeElement($categorie);
+        }
+    }
+
+    /**
+     * @param Categorie $categorie
+     * @return boolean
+     */
+    public function hasCategorie(Categorie $categorie)
+    {
+        return $this->categorien->contains($categorie);
     }
 }

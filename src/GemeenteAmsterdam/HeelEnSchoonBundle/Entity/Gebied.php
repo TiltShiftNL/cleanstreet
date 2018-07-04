@@ -29,6 +29,18 @@ class Gebied
      * @ORM\Column(type="string", length=50, nullable=false)
      */
     private $telefoon;
+    
+    /**
+     * @var string
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $geoCenter;
+    
+    /**
+     * @var string
+     * @ORM\Column(type="text", nullable=true)
+     */
+    private $geoArea;
 
     /**
      * Get id
@@ -86,5 +98,53 @@ class Gebied
     public function getTelefoon()
     {
         return $this->telefoon;
+    }
+
+    /**
+     * Set geoCenter.
+     *
+     * @param string|null $geoCenter
+     *
+     * @return Gebied
+     */
+    public function setGeoCenter($geoCenter = null)
+    {
+        $this->geoCenter = $geoCenter;
+
+        return $this;
+    }
+
+    /**
+     * Get geoCenter.
+     *
+     * @return string|null
+     */
+    public function getGeoCenter()
+    {
+        return $this->geoCenter;
+    }
+
+    /**
+     * Set geoArea.
+     *
+     * @param string|null $geoArea
+     *
+     * @return Gebied
+     */
+    public function setGeoArea($geoArea = null)
+    {
+        $this->geoArea = $geoArea;
+
+        return $this;
+    }
+
+    /**
+     * Get geoArea.
+     *
+     * @return string|null
+     */
+    public function getGeoArea()
+    {
+        return $this->geoArea;
     }
 }

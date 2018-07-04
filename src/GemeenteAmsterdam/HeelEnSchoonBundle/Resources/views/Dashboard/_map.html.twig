@@ -1,40 +1,61 @@
 <section class="map-view">
-    <aside class="map-meta">
+
+    <div class="sidebar">
+
+        <div class="region-select">
+            <h1 class="text-body"><b>gebied</b></h1>
+            <form>
+                <select class="select" id="region-select">
+                    <option value="dam">Damstraat, Damrak e.o.</option>
+                    <option value="rembrandtplein">Rembrandtplein </option>
+                    <option value="leidseplein">Leidseplein </option>
+                    <option value="plein4045">Plein 40-45</option>
+                </select>
+            </form>
+        </div>
+
         <div class="map-meta-statistics">
             <div class="statistics">
-                <h2 class="statistics-title">statistieken</h2>
-                <span class="statistics-item">0 bakledigingen</span>
-                <span class="statistics-item">0 open</span>
-                <span class="statistics-item">0 niet opgelost</span>
+                <h2 class="text-body"><b><span data-count-tickets>0</span> tickets totaal</b></h2>
+                <span class="statistics-item"><span data-count-ledigingen>0</span> bakledigingen</span>
+                <span class="statistics-item"><span data-count-nietopgelost>0</span> niet opgelost</span>
             </div>
         </div>
-
-        <div class="filter-section">
-            <h3 class="filter-section-title">gebieden</h3>
-            <label class="filter-section-label"><input type="radio" class="filter-section-radio" name="gebied" checked>Alle</label>
-            <label class="filter-section-label"><input type="radio" class="filter-section-radio" name="gebied">Damstraat, Damrak e.o.</label>
-            <label class="filter-section-label"><input type="radio" class="filter-section-radio" name="gebied">Rembrandt- en Leidseplein </label>
-            <label class="filter-section-label"><input type="radio" class="filter-section-radio" name="gebied">Plein 40-45</label>
-        </div>
-
-        <div class="filter-section">
-            <h3 class="filter-section-title">afvalbakken</h3>
-            <label class="filter-section-label"><input type="checkbox" class="filter-section-checkbox">Toon afvalbakken</label>
-        </div>
-
-        <div class="filter-section">
-            <h3 class="filter-section-title">status</h3>
-            <label class="filter-section-label"><input type="radio" class="filter-section-radio" name="status" checked>Alle</label>
-            <label class="filter-section-label"><input type="radio" class="filter-section-radio" name="status">Open</label>
-            <label class="filter-section-label"><input type="radio" class="filter-section-radio" name="status">Gesloten</label>
-            <label class="filter-section-label"><input type="radio" class="filter-section-radio" name="status">Opgelost</label>
-            <label class="filter-section-label"><input type="radio" class="filter-section-radio" name="status">Niet opgelost</label>
-            <label class="filter-section-label"><input type="radio" class="filter-section-radio" name="status">Onbekend</label>
-            <label class="filter-section-label"><input type="radio" class="filter-section-radio" name="status">Geleegd</label>
-        </div>
-    </aside>
+        <nav class="ticket-nav">
+            {% for ticket in tickets %}
+                {% spaceless %}
+                    {% if ticket.geo is defined %}
+                    {% set lat %}{{ ticket.geo|slice(16,16) }}{% endset %}
+                    {% set lng %}{{ ticket.geo|slice(33,-1) }}{% endset %}
+                    {% endif %}
+                {% endspaceless %}
+                <div class="ticket-nav-item"
+                    data-type="{{ ticket.type }}"
+                    data-lat="{{ lat|default("0") }}"
+                    data-lng="{{ lng|default("0") }}"
+                    data-time="{{ ticket.datumTijdAangemaakt|date('H:i') }}"
+                    data-oplossing="{{ ticket.oplossing|default("") }}">
+                    {% if ticket.fotos|default({})|length > 0 %}
+                        {% for foto in ticket.fotos %}
+                            <img src="{{ vich_uploader_asset(foto, 'imageFile')|imagine_filter('thumbnail480') }}" alt="" width="60" style="float: right">
+                        {% endfor %}
+                    {% endif %}
+                    <p class="ticket-nav-time">{{ ticket.datumTijdAangemaakt|date('H:i') }}</p>
+                    {% if ticket.oplossing == 'niet opgelost' %}
+                        <p class="ticket-warning">niet opgelost</p>
+                    {% endif %}
+                    <h3 class="ticket-nav-title">{{ ticket.type }}</h3>
+                    {% if ticket.type == 'notitie' %}
+                        <p class="ticket-nav-notitie">{{ ticket.tekst|nl2br }}</p>
+                    {% endif %}
+                    <p class="ticket-nav-meta">{{ ticket.straat }} {{ ticket.huisnummer }}</p>
+                    <a href="{{ path('gemeenteamsterdam_heelenschoon_tickets_detail', {'ticketId': ticket.id, 'gebiedId': ticket.gebied.id, 'return': 'dashboard', 'datum': filter.datumAangemaakt|date('Y-m-d')}) }}" class="ticket-nav-minilink">details</a>
+                </div>
+            {% endfor %}
+        </nav>
+    </div>
     <div class="map">
-         <style>#mapid { height: 800px; }</style>
+         <style>#mapid { height: 600px; }</style>
          <div id="mapid"></div>
     </div>
 </section>

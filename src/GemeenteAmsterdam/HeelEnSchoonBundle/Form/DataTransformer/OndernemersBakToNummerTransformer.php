@@ -21,7 +21,7 @@ class OndernemersBakToNummerTransformer implements DataTransformerInterface
         if ($ondernemersBak === null || (!($ondernemersBak instanceof OndernemersBak))) {
             return '';
         }
-        return $ondernemersBak->getNummer();
+        return $ondernemersBak->getKenmerk();
     }
 
     public function reverseTransform($kenmerk)

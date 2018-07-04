@@ -15,6 +15,9 @@
         <div class="view" id="diensten"></div>
         <div class="view" id="dienst-aanmaken"></div>
         <div class="view" id="omschrijving-toevoegen"></div>
+        <div class="view" id="ticket-start"></div>
+        <div class="view" id="ticket-hoeveelheid"></div>
+        <div class="view" id="ticket-type"></div>
         <div class="view" id="ticket-aanmaken"></div>
         <div class="view" id="foto-toevoegen"></div>
         <div class="view" id="bak-toevoegen"></div>
@@ -22,6 +25,7 @@
         <div class="view" id="bak-legen"></div>
         <div class="view" id="selecteer-ondernemer"></div>
         <div class="view" id="selecteer-dienst"></div>
+        <div class="view" id="medewerker-aanmaken"></div>
         <div class="view" id="main"></div>
 
         {% block header %}{% endblock %}
@@ -33,6 +37,7 @@
         {% block views %}{% endblock %}
 
         <script src="/assets/js/leaflet.js"></script>
+        <script>var DATAPUNTAPI = '{{ app_datapunt_baseurl }}';</script>
         <script src="{{ asset('/assets/js/app.js') }}"></script>
-    
+    </body>
 </html>
