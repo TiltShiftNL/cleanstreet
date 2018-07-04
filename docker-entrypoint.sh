@@ -16,9 +16,11 @@ parameters:
    database_user: ${SYMFONY__CLEANSTREET__DATABASE_USER}
    database_password: ${SYMFONY__CLEANSTREET__DATABASE_PASSWORD}
    secret: ${SYMFONY__CLEANSTREET__SECRET}
-   messagebird_accountkey: ${SYMFONY__CLEANSTREET__APP_MESSAGEBIRD_KEY}
-   messagebird_enable: ${SYMFONY__CLEANSTREET__APP_PHONE_ENABLED}
+   app_messagebird_key: ${SYMFONY__CLEANSTREET__APP_MESSAGEBIRD_KEY}
+   app_phone_enabled: ${SYMFONY__CLEANSTREET__APP_PHONE_ENABLED}
    piwik_site_id: ${SYMFONY__CLEANSTREET__PIWIK_SITE_ID}
+   app_datapunt_baseurl: ${SYMFONY__CLEANSTREET__APP_DATAPUNT_BASEURL}
+   cookie_secure: true
    trusted_proxies:
         - 127.0.0.1
         - 10.0.0.0/8
@@ -26,10 +28,10 @@ parameters:
         - 192.168.0.0/16
 EOF
 
-# Already in Dockerfile (?)
-php composer.phar install -d heelenschoon/
+# Run composer scripts
+php composer.phar install -d heelenschoon/ --no-progress
 
-php heelenschoon/bin/console cache:clear --no-warmup --env=prod
+php heelenschoon/bin/console cache:clear --env=prod
 
 # Postgres / Postgis
 php heelenschoon/bin/console doctrine:query:sql "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";"
