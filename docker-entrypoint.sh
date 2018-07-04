@@ -5,9 +5,9 @@ echo Starting server
 set -u
 #set -e
 
+# Build parameters file
 DB_HOST=${SYMFONY__CLEANSTREET__DATABASE_HOST:-cleanstreet-db.service.consul}
 DB_PORT=${SYMFONY__CLEANSTREET__DATABASE_PORT:-5432}
-
 cat > /srv/web/heelenschoon/app/config/parameters.yml <<EOF
 parameters:
    database_host: ${DB_HOST}
@@ -31,17 +31,20 @@ EOF
 # Run composer scripts
 php composer.phar install -d heelenschoon/ --no-progress
 
+# Clear and warm prod cache
 php heelenschoon/bin/console cache:clear --env=prod
 
 # Postgres / Postgis
 php heelenschoon/bin/console doctrine:query:sql "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";"
-php heelenschoon/bin/console doctrine:query:sql "CREATE EXTENSION IF NOT EXISTS \"postgis\";" 
+php heelenschoon/bin/console doctrine:query:sql "CREATE EXTENSION IF NOT EXISTS \"postgis\";"
 php heelenschoon/bin/console doctrine:query:sql "CREATE EXTENSION IF NOT EXISTS \"postgis_topology\";"
 php heelenschoon/bin/console doctrine:migrations:migrate
 
+# Create data/tmp/cache/log/thumbnails dir
 [ -d heelenschoon/var/data ] || mkdir -p heelenschoon/var/data && [ -d heelenschoon/web/media ] || mkdir -p heelenschoon/web/media
 #chown -R www-data:www-data heelenschoon/var heelenschoon/web && find heelenschoon/var heelenschoon/web -type d -exec chmod -R 0770 {}\; && find heelenschoon/var heelenschoon/web -type f -exec chmod -R 0660 {}\;
 chown -R www-data:www-data heelenschoon/var heelenschoon/web
 
-service php7.0-fpm start
+# Start services
+service php7.1-fpm start
 nginx -g "daemon off;"
