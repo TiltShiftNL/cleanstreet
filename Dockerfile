@@ -4,7 +4,8 @@ MAINTAINER datapunt@amsterdam.nl
 EXPOSE 80
 
 # add Sury.org PHP 7.1 packages
-RUN apt install apt-transport-https ca-certificates wget \
+RUN apt-get update \
+ && apt install -y apt-transport-https ca-certificates wget \
  && wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg \
  && sh -c 'echo "deb https://packages.sury.org/php/ stretch main" > /etc/apt/sources.list.d/php.list' \
  && apt update
