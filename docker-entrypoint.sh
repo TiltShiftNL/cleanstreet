@@ -41,9 +41,9 @@ php heelenschoon/bin/console doctrine:query:sql "CREATE EXTENSION IF NOT EXISTS 
 php heelenschoon/bin/console doctrine:migrations:migrate
 
 # Create data/tmp/cache/log/thumbnails dir
-[ -d heelenschoon/var/data ] || mkdir -p heelenschoon/var/data && [ -d heelenschoon/web/media ] || mkdir -p heelenschoon/web/media
+[ -d heelenschoon/var/data ] || mkdir -p heelenschoon/var/data
 #chown -R www-data:www-data heelenschoon/var heelenschoon/web && find heelenschoon/var heelenschoon/web -type d -exec chmod -R 0770 {}\; && find heelenschoon/var heelenschoon/web -type f -exec chmod -R 0660 {}\;
-chown -R www-data:www-data heelenschoon/var heelenschoon/web
+chown -R www-data:www-data heelenschoon/var
 
 # Start services
 service php7.1-fpm start
