@@ -38,14 +38,14 @@ class LeegNuController extends Controller
             $ondernemersBak = $event->getForm()->get('ondernemersBak')->getData();
             /** @var $ledigingsVerzoek LedigingsVerzoek */
             $ledigingsVerzoek = $event->getData();
-            $ledigingsVerzoek->setBron(Ticket::BRON_HANDMATIG);
+            $ledigingsVerzoek->setBron(Ticket::BRON_LEEGNU);
             $ledigingsVerzoek->setGeo($ondernemersBak->getOnderneming()->getGeoPoint());
             $ledigingsVerzoek->setHuisnummer($ondernemersBak->getOnderneming()->getHuisnummer());
             $ledigingsVerzoek->setOndernemersBak($ondernemersBak);
             $ledigingsVerzoek->setOnderneming($ondernemersBak->getOnderneming());
-            $ledigingsVerzoek->setStatus(true);
+            $ledigingsVerzoek->setStatus(false);
             $ledigingsVerzoek->setStraat($ondernemersBak->getOnderneming()->getStraat());
-            $ledigingsVerzoek->setOplossing(Ticket::OPLOSSING_GELEEGD);
+            $ledigingsVerzoek->setOplossing(Ticket::OPLOSSING_GEEN);
             $ledigingsVerzoek->setGebied($ondernemersBak->getOnderneming()->getGebied());
         });
         $form = $formBuilder->getForm();
