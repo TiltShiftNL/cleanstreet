@@ -23,3 +23,14 @@ parameters:
     app_messagebird_key: g66p9QdTSFlw7qatSWktYXN0z
     app_datapunt_baseurl: 'https://api.data.amsterdam.nl'
     cookie_secure: false
+
+    # open stack
+    swift_auth_url: 'https://identity.stack.cloudvps.com/v3/'
+    swift_region: 'NL'
+    swift_user_name: 'cleanstreet_***'
+    swift_user_domain_id: 'Default'
+    swift_user_password: '***'
+    swift_project_id: '***'
+    swift_container_prefix: ''
+    swift_external_domain: ''
+    

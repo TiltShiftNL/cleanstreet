@@ -103,10 +103,12 @@ sensio_framework_extra:
 # Vich uploader
 vich_uploader:
     db_driver: orm
+    storage: flysystem
     mappings:
         foto_image:
-            uri_prefix: /media
-            upload_destination: '%kernel.root_dir%/../web/media'
+            uri_prefix: /
+            #upload_destination: '%kernel.root_dir%/../web/media'
+            upload_destination: 'flysystem_originals'
             inject_on_load: false
             delete_on_update: true
             delete_on_remove: true
@@ -114,9 +116,19 @@ vich_uploader:
             
 # Liip
 liip_imagine:
+    loaders:
+        originals_loader:
+            flysystem:
+                filesystem_service: flysystem_originals
+    data_loader: originals_loader
     resolvers:
         default:
-            web_path: ~
+            #web_path: ~
+            flysystem:
+                filesystem_service: flysystem_thumbnails
+                root_url: '%swift_public_url%/%swift_container_prefix%thumbnails'
+                cache_prefix: media/cache
+                visibility: public
     filter_sets:
         cache: ~
         thumbnail1000:

@@ -27,6 +27,7 @@ server {
   location ~* \.(?:jpg|jpeg|gif|png|ico|cur|gz|svg|svgz|mp4|ogg|ogv|webm|htc)$ {
     expires 1y;
     add_header Cache-Control "public";
+    try_files $uri /app_prod.php$is_args$args;
   }
 
   location ~* \.(?:css|js)$ {
@@ -61,10 +62,11 @@ server {
     internal;
   }
 
-#  location ~* \.(?:jpg|jpeg|gif|png|ico|cur|gz|svg|svgz|mp4|ogg|ogv|webm|htc)$ {
-#    expires 1y;
-#    add_header Cache-Control "public";
-#  }
+  location ~* \.(?:jpg|jpeg|gif|png|ico|cur|gz|svg|svgz|mp4|ogg|ogv|webm|htc)$ {
+    expires 1y;
+    add_header Cache-Control "public";
+    try_files $uri /app_prod.php$is_args$args;
+  }
 
   location ~* \.(?:css|js)$ {
     expires 1y;

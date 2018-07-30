@@ -2,6 +2,7 @@
 # http://symfony.com/doc/current/service_container.html
 parameters:
     #parameter_name: value
+    swift_public_url: 'https://%swift_project_id%.%swift_external_domain%'
 
 services:
     #service_name:
@@ -15,3 +16,55 @@ services:
         class: MessageBird\Client
         arguments:
             - '%app_messagebird_key%'
+            
+            
+    # OpenStack
+    openstack:
+        class: OpenStack\OpenStack
+        lazy: true
+        arguments:
+            - { authUrl: '%swift_auth_url%', region: '%swift_region%', user: { name: '%swift_user_name%', domain: { id: '%swift_user_domain_id%' }, password: '%swift_user_password%' }, scope: { project: { id: '%swift_project_id%' } } }
+    openstack_objectstore:
+        class: OpenStack\ObjectStore\v1\Service
+        lazy: true
+        factory: ['@openstack', 'objectStoreV1']
+    openstack_objectstore_container_thumbnails:
+        class: OpenStack\ObjectStore\v1\Models\Container
+        lazy: true
+        factory: ['@openstack_objectstore', 'getContainer']
+        arguments:
+            - '%swift_container_prefix%thumbnails'
+    openstack_objectstore_container_originals:
+        class: OpenStack\ObjectStore\v1\Models\Container
+        lazy: true
+        factory: ['@openstack_objectstore', 'getContainer']
+        arguments:
+            - '%swift_container_prefix%originals'
+            
+    # Flysystem
+    flysystem_openstack_adapter_thumbnails:
+        class: Nimbusoft\Flysystem\OpenStack\SwiftAdapter
+        lazy: true
+        arguments:
+            - '@openstack_objectstore_container_thumbnails'
+    flysystem_thumbnails:
+        class: League\Flysystem\Filesystem
+        lazy: true
+        arguments:
+            - '@flysystem_openstack_adapter_thumbnails'
+    flysystem_openstack_adapter_originals:
+        class: Nimbusoft\Flysystem\OpenStack\SwiftAdapter
+        lazy: true
+        arguments:
+            - '@openstack_objectstore_container_originals'
+    flysystem_originals:
+        class: League\Flysystem\Filesystem
+        lazy: true
+        arguments:
+            - '@flysystem_openstack_adapter_originals'
+            
+    # Bypass OneUp bundle
+    oneup_flysystem.mount_manager:
+        class: League\Flysystem\MountManager
+        calls:
+            - ['mountFilesystem', ['flysystem_originals', '@flysystem_originals']]
