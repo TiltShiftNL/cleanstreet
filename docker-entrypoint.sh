@@ -26,14 +26,14 @@ parameters:
         - 10.0.0.0/8
         - 172.16.0.0/12
         - 192.168.0.0/16
-    swift_auth_url: ${SYMFONY__CLEANSTREET__SWIFT_AUTH_URL}
-    swift_region: ${SYMFONY__CLEANSTREET__SWIFT_REGION}
-    swift_user_name: ${SYMFONY__CLEANSTREET__SWIFT_USER_NAME}
-    swift_user_domain_id: ${SYMFONY__CLEANSTREET__SWIFT_USER_DOMAIN_ID}
-    swift_user_password: ${SYMFONY__CLEANSTREET__SWIFT_USER_PASSWORD}
-    swift_project_id: ${SYMFONY__CLEANSTREET__SWIFT_PROJECT_ID}
-    swift_container_prefix: ${SYMFONY__CLEANSTREET__SWIFT_CONTAINER_PREFIX}
-    swift_external_domain: ${SYMFONY__CLEANSTREET__SWIFT_EXTERNAL_DOMAIN}
+   swift_auth_url: ${SYMFONY__CLEANSTREET__SWIFT_AUTH_URL}
+   swift_region: ${SYMFONY__CLEANSTREET__SWIFT_REGION}
+   swift_user_name: ${SYMFONY__CLEANSTREET__SWIFT_USER_NAME}
+   swift_user_domain_id: ${SYMFONY__CLEANSTREET__SWIFT_USER_DOMAIN_ID}
+   swift_user_password: ${SYMFONY__CLEANSTREET__SWIFT_USER_PASSWORD}
+   swift_project_id: ${SYMFONY__CLEANSTREET__SWIFT_PROJECT_ID}
+   swift_container_prefix: ${SYMFONY__CLEANSTREET__SWIFT_CONTAINER_PREFIX}
+   swift_external_domain: ${SYMFONY__CLEANSTREET__SWIFT_EXTERNAL_DOMAIN}
 EOF
 
 # Run composer scripts
