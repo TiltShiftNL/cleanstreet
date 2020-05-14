@@ -5,10 +5,12 @@ EXPOSE 80
 
 ARG DEBIAN_FRONTEND=noninteractive
 
+# add Sury.org PHP 7.1 packages
+RUN apt-get update \
+ && apt install -yq apt-transport-https ca-certificates wget \
+ && apt update
 # install php packages
-RUN apt-get update && apt-get install -yq \
- apt-transport-https ca-certificates wget \
- git vim wget cron rsync \
+RUN apt-get update && apt-get install -yq git vim wget cron rsync \
  php-fpm \
  php-intl \
  php-pgsql \
