@@ -54,5 +54,5 @@ php heelenschoon/bin/console doctrine:migrations:migrate
 chown -R www-data:www-data heelenschoon/var
 
 # Start services
-service php7.1-fpm start
+service php7.3-fpm start
 nginx -g "daemon off;"

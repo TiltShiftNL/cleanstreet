@@ -5,14 +5,10 @@ EXPOSE 80
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-# add Sury.org PHP 7.1 packages
-RUN apt-get update \
- && apt install -yq apt-transport-https ca-certificates wget \
- #&& wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg \
- #&& sh -c 'echo "deb https://packages.sury.org/php/ stretch main" > /etc/apt/sources.list.d/php.list' \
- && apt update
 # install php packages
-RUN apt-get update && apt-get install -yq git vim wget cron rsync \
+RUN apt-get update && apt-get install -yq \
+ apt-transport-https ca-certificates wget \
+ git vim wget cron rsync \
  php-fpm \
  php-intl \
  php-pgsql \
@@ -38,7 +34,6 @@ RUN mkdir -p /srv/web/heelenschoon
 COPY . /srv/web/heelenschoon
 WORKDIR /srv/web
 RUN wget https://getcomposer.org/composer.phar
-RUN ls /etc/php
 # nginx and php setup
 COPY Docker/cleanstreet.vhost /etc/nginx/conf.d/heelenschoon.vhost.conf
 RUN rm /etc/nginx/conf.d/default.conf \
