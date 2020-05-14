@@ -17,6 +17,8 @@ services:
         - "8129:80"
       links:
         - database:database
+      volumes:
+        - .:/srv/web/heelenschoon
         
       environment:
         SYMFONY__CLEANSTREET__DATABASE_HOST: database

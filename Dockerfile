@@ -1,16 +1,18 @@
-FROM nginx:latest
-MAINTAINER datapunt@amsterdam.nl
+FROM nginx:1.12
+MAINTAINER apps@tiltshift.nl
 
 EXPOSE 80
 
+ARG DEBIAN_FRONTEND=noninteractive
+
 # add Sury.org PHP 7.1 packages
 RUN apt-get update \
- && apt install -y apt-transport-https ca-certificates wget \
+ && apt install -yq apt-transport-https ca-certificates wget \
  && wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg \
  && sh -c 'echo "deb https://packages.sury.org/php/ stretch main" > /etc/apt/sources.list.d/php.list' \
  && apt update
 # install php packages
-RUN apt-get update && apt-get install -y git vim wget cron rsync php7.1-fpm php7.1-intl php7.1-pgsql php7.1-curl php7.1-cli php7.1-gd php7.1-mbstring php7.1-mcrypt php7.1-opcache php7.1-sqlite3 php7.1-xml php7.1-xsl php7.1-zip php7.1-json php7.1-xmlrpc iputils-ping \
+RUN apt-get update && apt-get install -yq git vim wget cron rsync php7.1-fpm php7.1-intl php7.1-pgsql php7.1-curl php7.1-cli php7.1-gd php7.1-mbstring php7.1-mcrypt php7.1-opcache php7.1-sqlite3 php7.1-xml php7.1-xsl php7.1-zip php7.1-json php7.1-xmlrpc iputils-ping \
  && apt-get -y upgrade && apt-get -y dist-upgrade && apt-get check && apt-get clean
 
 # create basic directory
@@ -37,7 +39,7 @@ RUN rm /etc/nginx/conf.d/default.conf \
 
 # only install dependencies
 ENV COMPOSER_ALLOW_SUPERUSER 1
-RUN php composer.phar install -d heelenschoon/ --prefer-dist --no-progress --no-suggest --no-scripts
+RUN php composer.phar install -d heelenschoon/ --prefer-dist --no-progress --no-scripts
 
 # run
 COPY docker-entrypoint.sh /docker-entrypoint.sh
