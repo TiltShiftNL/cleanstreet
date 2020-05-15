@@ -2,24 +2,24 @@ version: "3.2"
 
 services:
     database:
-      image: amsterdam/postgres
-      ports:
-        - "5402:5432"
+      image: postgis/postgis:12-3.0-alpine
+      networks:
+        - cleanstreet
       environment:
-        POSTGRES_HOST: localhost
         POSTGRES_PASSWORD: insecure
         POSTGRES_DB: cleanstreet
         POSTGRES_USER: cleanstreet
 
     web:
       build: .
+      depends_on:
+        - database
       ports:
         - "8129:80"
-      links:
-        - database:database
       volumes:
         - .:/srv/web/heelenschoon
-        
+      networks:
+        - cleanstreet 
       environment:
         SYMFONY__CLEANSTREET__DATABASE_HOST: database
         SYMFONY__CLEANSTREET__DATABASE_PORT: "5432"
@@ -30,7 +30,7 @@ services:
         SYMFONY__CLEANSTREET__APP_PHONE_ENABLED: "true"
         SYMFONY__CLEANSTREET__APP_MESSAGEBIRD_KEY: "insecure"
         SYMFONY__CLEANSTREET__PIWIK_SITE_ID: "null" # null for no piwik integration
-        SYMFONY__CLEANSTREET__APP_DATAPUNT_BASEURL: https://api.data.amsterdam.nl
+        SYMFONY__CLEANSTREET__APP_DATAPUNT_BASEURL: https://api.tiltshiftapps.nl
         
         SYMFONY__CLEANSTREET__SWIFT_AUTH_URL: "https://swift.dev/"
         SYMFONY__CLEANSTREET__SWIFT_REGION: "Europe/Amsterdam"
@@ -41,3 +41,6 @@ services:
         SYMFONY__CLEANSTREET__SWIFT_CONTAINER_PREFIX: "container_prefix"
         SYMFONY__CLEANSTREET__SWIFT_EXTERNAL_DOMAIN: "external.domain"
 
+networks:
+  cleanstreet:
+    driver: bridge
