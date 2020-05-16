@@ -55,7 +55,7 @@ a { color: inherit; }
     .section-header .back[data-label]::after { content: attr(data-label); position: absolute; top: 0; bottom: 0; left: 30px; white-space: nowrap; }
     .section-header .edit { position: absolute; top: 0; bottom: 0; right: 0; padding: 0 15px; text-decoration: underline; }
     .section-header .edit:hover, .section-header .edit:focus { text-decoration: none; }
-    .section-header button[type="submit"], .section-header .submit { position: absolute; top: 10px; right: 10px; display: block; height: 50px; line-height: 50px; padding: 0 10px; border-radius: 5px; background: #00af66; color: #fff; font-weight: normal; text-decoration: none; }
+    .section-header button[type="submit"], .section-header .submit { position: absolute; top: 10px; right: 10px; height: 50px; line-height: 50px; padding: 0 10px; border-radius: 5px; background: #00af66; color: #fff;}
     .section-header button[type="submit"]:active, .section-header .submit:active { background: #009959; }
 .search { margin: 10px; }
     input[type="search"] { display: block; box-sizing: border-box; width: 100%; height: 40px; padding: 0 10px 0 35px; border: 1px solid rgba(151, 151, 151, .5); border-radius: 20px; -webkit-appearance: none; outline: none; transition: .1s ease-out; background: #fff url('data:image/svg+xml,%3Csvg%20width%3D%2216px%22%20height%3D%2216px%22%20viewBox%3D%220%200%2016%2016%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M15.545%2C13.467%20L11.766%2C9.688%20C12.336%2C8.753%2012.664%2C7.653%2012.664%2C6.478%20C12.664%2C3.061%209.703%2C0.101%206.286%2C0.101%20C2.869%2C0.1%200.1%2C2.87%200.1%2C6.287%20C0.1%2C9.703%203.061%2C12.664%206.477%2C12.664%20C7.614%2C12.664%208.677%2C12.355%209.592%2C11.82%20L13.391%2C15.621%20C13.763%2C15.992%2014.366%2C15.992%2014.737%2C15.621%20L15.68%2C14.678%20C16.051%2C14.307%2015.916%2C13.838%2015.545%2C13.467%20Z%20M2.004%2C6.287%20C2.004%2C3.921%203.921%2C2.004%206.286%2C2.004%20C8.652%2C2.004%2010.76%2C4.111%2010.76%2C6.478%20C10.76%2C8.843%208.842%2C10.761%206.477%2C10.761%20C4.111%2C10.76%202.004%2C8.652%202.004%2C6.287%20Z%22%3E%3C%2Fpath%3E%3C%2Fsvg%3E') no-repeat 10px 50%; }
@@ -121,7 +121,7 @@ a { color: inherit; }
 .field { padding: 10px 15px 5px; }
 .field.is-hidden { display: none; }
     .field > label, .field legend { font-weight: bold; color: inherit; }
-        .field input[type="text"], .field input[type="url"], .field input[type="password"], .field input[type="tel"], .field input[type="email"], .field textarea { box-sizing: border-box; display: block; width: 100%; padding: 5px; border: 2px solid rgba(151, 151, 151, .5); box-shadow: none; font-size: 18px; }
+        .field input[type="text"], .field input[type="url"], .field input[type="password"], .field input[type="tel"], .field input[type="email"], .field textarea { box-sizing: border-box; width: 100%; padding: 5px; margin: 5px;}
         .field input[type="file"] { display: block; }
         .field select { box-sizing: border-box; display: block; width: 100%; padding: 5px; border: 2px solid rgba(151, 151, 151, .5); background: #fff; font-size: 18px; }
         .field textarea { resize: vertical; }

@@ -5,7 +5,7 @@ security:
         medewerkers:
             entity:
                 class: HeelEnSchoonBundle:Medewerker
-                property: id
+                property: naam
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
