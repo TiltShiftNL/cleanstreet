@@ -25,11 +25,7 @@
                     <label class="wide fixed">
                         {% include 'HeelEnSchoonBundle:_icons:user.svg.twig' %}
                         <span>Gebruiker</span>
-                        <select name="_username">
-{% for medewerker in medewerkers %}
-                            <option value="{{ medewerker.username }}" {{ last_username == medewerker.id ? 'selected' }}>{{ medewerker.naam }}</option>
-{% endfor %}
-                        </select>
+                        <input type="text" id="username" name="_username" value="" placeholder="Vul hier je gebruikersnaam in">
                     </label>
                 </div>
                 <div class="field-special">
