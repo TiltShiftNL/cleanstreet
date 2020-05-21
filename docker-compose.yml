@@ -30,7 +30,7 @@ services:
         SYMFONY__CLEANSTREET__APP_PHONE_ENABLED: "true"
         SYMFONY__CLEANSTREET__APP_MESSAGEBIRD_KEY: "insecure"
         SYMFONY__CLEANSTREET__PIWIK_SITE_ID: "null" # null for no piwik integration
-        SYMFONY__CLEANSTREET__APP_DATAPUNT_BASEURL: https://api.tiltshiftapps.nl
+        SYMFONY__CLEANSTREET__APP_GEOCODER_BASEURL: https://nominatim.openstreetmap.org
         
         SYMFONY__CLEANSTREET__SWIFT_AUTH_URL: "https://swift.dev/"
         SYMFONY__CLEANSTREET__SWIFT_REGION: "Europe/Amsterdam"

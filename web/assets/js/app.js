@@ -358,17 +358,13 @@ var cs = {
     utils: {
         fetchStreet: function(lat, lon, callback) {
             cs.utils.xhr({
-                url: DATAPUNTAPI + '/geosearch/search/?item=openbareruimte&lat=' + lat + '&lon=' + lon + '&radius=' + 10,
+                url: GEOCODER + '/reverse.php?format=json&lat=' + lat + '&lon=' + lon + '&zoom=' + 21,
                 timeout: 2000,
                 success: function(request) {
+                    var streets = [];
                     var response = JSON.parse(request.responseText);
-                    if (response.features && response.features.length) {
-                        var streets = [];
-                        response.features.forEach(function(feature) {
-                            if (feature.properties.opr_type == 'Weg') {
-                                streets.push(feature.properties.display);
-                            }
-                        });
+                    if (response) {
+                        streets.push(feature.properties.display_name);
                         if (streets.length) {
                             callback(streets[0])
                         }

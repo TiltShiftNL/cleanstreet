@@ -22,23 +22,16 @@ class Version20170712123126 extends AbstractMigration
         $stmtUpdate = $this->connection->prepare('UPDATE ticket SET straat = :straat, huisnummer = :huisnummer WHERE id = :id');
 
         foreach ($tickets as $ticket) {
-            // https://api.datapunt.amsterdam.nl/geosearch/search/?item=openbareruimte&lat=0&lon=&radius=50
             $matches = array();
             preg_match("/\((.*) (.*)\)/", $ticket['_geo'], $matches);
 
-            $ch = curl_init('https://api.datapunt.amsterdam.nl/geosearch/search/?item=openbareruimte&lat=' . $matches[1] . '&lon=' . $matches[2] . '&radius=50');
+            $ch = curl_init('https://nominatim.openstreetmap.org/reverse.php?format=json&lat=' . $matches[1] . '&lon=' . $matches[2] . '&zoom=18');
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             $jsonString = curl_exec($ch);
             curl_close($ch);
 
             $jsonData = json_decode($jsonString);
-            $jsonData->features= array_filter($jsonData->features, function ($row) {
-                return $row->properties->opr_type == 'Weg';
-            });
-            if (count($jsonData->features) > 0) {
-                $obj = reset($jsonData->features);
-                $stmtUpdate->execute([':straat' => $obj->properties->display, ':huisnummer' => '', ':id' => $ticket['id']]);
-            }
+            $stmtUpdate->execute([':straat' => $obj->display_name, ':huisnummer' => '', ':id' => $ticket['id']]);
         }
     }
 

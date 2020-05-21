@@ -2,7 +2,7 @@
 
 Heel en Schoon is een project van de Gemeente Amsterdam. Meer informatie over dit project is te vinden op de website van het [Datalab van de Gemeente Amsterdam](https://www.amsterdam.nl/bestuur-organisatie/organisatie/overige/datalab-amsterdam/)
 
-Meer informatie [datapunt.ois@amsterdam.nl](datapunt.ois@amsterdam.nl)
+Meer informatie [info@tiltshiftapps.nl](info@tiltshiftapps.nl)
 
 
 ## Waarom is deze code gedeeld

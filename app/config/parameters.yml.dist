@@ -21,7 +21,7 @@ parameters:
     #
     app_phone_enabled: true
     app_messagebird_key: g66p9QdTSFlw7qatSWktYXN0z
-    app_datapunt_baseurl: 'https://api.data.amsterdam.nl'
+    app_geocoder_baseurl: 'https://nominatim.openstreetmap.org'
     cookie_secure: false
 
     # open stack

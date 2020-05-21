@@ -19,7 +19,7 @@ parameters:
    app_messagebird_key: ${SYMFONY__CLEANSTREET__APP_MESSAGEBIRD_KEY}
    app_phone_enabled: ${SYMFONY__CLEANSTREET__APP_PHONE_ENABLED}
    piwik_site_id: ${SYMFONY__CLEANSTREET__PIWIK_SITE_ID}
-   app_datapunt_baseurl: ${SYMFONY__CLEANSTREET__APP_DATAPUNT_BASEURL}
+   app_geocoder_baseurl: ${SYMFONY__CLEANSTREET__APP_GEOCODER_BASEURL}
    cookie_secure: true
    trusted_proxies:
         - 127.0.0.1
