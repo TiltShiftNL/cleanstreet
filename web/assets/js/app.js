@@ -358,16 +358,12 @@ var cs = {
     utils: {
         fetchStreet: function(lat, lon, callback) {
             cs.utils.xhr({
-                url: GEOCODER + '/reverse.php?format=json&lat=' + lat + '&lon=' + lon + '&zoom=' + 21,
+                url: GEOCODER + '/reverse.php?accept-language=nl&format=json&lat=' + lat + '&lon=' + lon + '&zoom=' + 21,
                 timeout: 2000,
                 success: function(request) {
-                    var streets = [];
                     var response = JSON.parse(request.responseText);
                     if (response) {
-                        streets.push(feature.properties.display_name);
-                        if (streets.length) {
-                            callback(streets[0])
-                        }
+                        callback(response.display_name)
                     }
                 }
             });
