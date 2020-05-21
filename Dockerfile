@@ -4,6 +4,7 @@ MAINTAINER apps@tiltshift.nl
 EXPOSE 80
 
 ARG DEBIAN_FRONTEND=noninteractive
+ENV CLEANSTREET_ENV dev
 
 # add Sury.org PHP 7.1 packages
 RUN apt-get update \

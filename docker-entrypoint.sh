@@ -40,8 +40,7 @@ EOF
 php composer.phar install -d heelenschoon/ --no-progress
 
 # Clear and warm prod cache
-php heelenschoon/bin/console cache:clear --env=prod
-
+php heelenschoon/bin/console cache:clear --env=${CLEANSTREET_ENV:-prod}
 # Postgres / Postgis
 php heelenschoon/bin/console doctrine:query:sql "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";"
 php heelenschoon/bin/console doctrine:query:sql "CREATE EXTENSION IF NOT EXISTS \"postgis\";"
