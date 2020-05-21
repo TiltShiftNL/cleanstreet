@@ -17,9 +17,9 @@ parameters:
 
     # A secret key that's used to generate certain security-related tokens
     secret: ThisTokenIsNotSoSecretChangeIt
-    
+
     #
-    app_phone_enabled: true
+    app_phone_enabled: false
     app_messagebird_key: g66p9QdTSFlw7qatSWktYXN0z
     app_geocoder_baseurl: 'https://nominatim.openstreetmap.org'
     cookie_secure: false
@@ -33,4 +33,3 @@ parameters:
     swift_project_id: '***'
     swift_container_prefix: ''
     swift_external_domain: ''
-    

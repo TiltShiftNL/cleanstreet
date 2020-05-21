@@ -19,7 +19,7 @@ services:
       volumes:
         - .:/srv/web/heelenschoon
       networks:
-        - cleanstreet 
+        - cleanstreet
       environment:
         SYMFONY__CLEANSTREET__DATABASE_HOST: database
         SYMFONY__CLEANSTREET__DATABASE_PORT: "5432"
@@ -27,11 +27,11 @@ services:
         SYMFONY__CLEANSTREET__DATABASE_USER: "cleanstreet"
         SYMFONY__CLEANSTREET__DATABASE_PASSWORD: "insecure"
         SYMFONY__CLEANSTREET__SECRET: "insecure" # random
-        SYMFONY__CLEANSTREET__APP_PHONE_ENABLED: "true"
+        SYMFONY__CLEANSTREET__APP_PHONE_ENABLED: "false"
         SYMFONY__CLEANSTREET__APP_MESSAGEBIRD_KEY: "insecure"
         SYMFONY__CLEANSTREET__PIWIK_SITE_ID: "null" # null for no piwik integration
         SYMFONY__CLEANSTREET__APP_GEOCODER_BASEURL: https://nominatim.openstreetmap.org
-        
+
         SYMFONY__CLEANSTREET__SWIFT_AUTH_URL: "https://swift.dev/"
         SYMFONY__CLEANSTREET__SWIFT_REGION: "Europe/Amsterdam"
         SYMFONY__CLEANSTREET__SWIFT_USER_NAME: "user"
