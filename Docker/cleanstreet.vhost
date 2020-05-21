@@ -1,9 +1,4 @@
 server {
-  server_name leeg.nu;
-  rewrite ^ https://www.leeg.nu$request_uri? permanent;
-}
-
-server {
   listen 80;
   listen [::]:80;
   server_name www.leeg.nu;
@@ -38,14 +33,9 @@ server {
 }
 
 server {
-  server_name heelenschoon.datalabamsterdam.nl;
-  rewrite ^ https://cleanstreet.amsterdam.nl$request_uri? permanent;
-}
-
-server {
   listen 80 default;
   listen [::]:80 default;
-  server_name cleanstreet.amsterdam.nl;
+  server_name cleanstreet;
 
   root /srv/web/heelenschoon/web;
   index index.html;

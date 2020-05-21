@@ -75,7 +75,7 @@ class WebsiteController extends Controller
             $notitie->setGebied($form->get('gebied')->getData());
             $notitie->setBron(Notitie::BRON_CLEANSTREET);
             $notitie->setTekst(
-                'Contactformulier via https://cleanstreet.amsterdam.nl' . PHP_EOL .
+                'Contactformulier via ' . $_SERVER['REQUEST_URI'] . PHP_EOL .
                 'Naam: ' . $form->get('naam')->getData() . PHP_EOL .
                 'E-mail: ' . $form->get('email')->getData() . PHP_EOL .
                 'Telefoon: ' . $form->get('telefoon')->getData() . PHP_EOL .
