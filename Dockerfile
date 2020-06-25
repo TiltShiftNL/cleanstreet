@@ -28,7 +28,7 @@ RUN apt-get update && apt-get install -yq git vim wget cron rsync \
  php-json \
  php-xmlrpc \
  iputils-ping \
- && apt-get -y upgrade && apt-get -y dist-upgrade && apt-get check && apt-get clean
+ && apt-get clean
 
 # create basic directory
 RUN mkdir -p /srv/web/heelenschoon
